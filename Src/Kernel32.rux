@@ -181,8 +181,8 @@ module Windows {
         reserved0: uint32;
         reserved1: uint32;
 
-        fileName: [260]char8;
-        alternateFileName: [14]char8;
+        fileName: char8[260];
+        alternateFileName: char8[14];
     }
 
     /// Specifies a date and time, using individual members for the month, day, year, weekday, hour, minute, second, and millisecond. 
@@ -483,20 +483,16 @@ module Windows {
 
         /// Loads a DLL into the calling process.
         /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya
-        func LoadLibraryA(
-            libFileName: *const char8
-        ) -> *opaque;
+        func LoadLibraryA(libFileName: *const char8) -> *opaque;
 
         /// Frees a loaded DLL module.
         /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
-        func FreeLibrary(
-            module: *opaque
-        ) -> bool32;
+        func FreeLibrary(module_arg: *opaque) -> bool32;  // named module_arg and not module because the compiler thought it was the keyword
 
         /// Retrieves the address of an exported symbol.
         /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
         func GetProcAddress(
-            module: *opaque,
+            module_arg: *opaque,
             procName: *const char8
         ) -> *opaque;
 
