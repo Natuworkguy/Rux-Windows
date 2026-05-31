@@ -1,0 +1,527 @@
+/*
+    Windows API — Advapi32.dll (Registry, Services, Security, LSA)
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+*/
+
+module Windows {
+
+
+    // Constants — Registry Hive Predefined Handles
+
+
+    pub const HKEY_CLASSES_ROOT:      uint = 0x80000000u;
+    pub const HKEY_CURRENT_USER:      uint = 0x80000001u;
+    pub const HKEY_LOCAL_MACHINE:     uint = 0x80000002u;
+    pub const HKEY_USERS:             uint = 0x80000003u;
+    pub const HKEY_CURRENT_CONFIG:    uint = 0x80000005u;
+
+
+    // Constants — Registry Access Rights
+
+
+    pub const KEY_QUERY_VALUE:        uint32 = 0x0001u32;
+    pub const KEY_SET_VALUE:          uint32 = 0x0002u32;
+    pub const KEY_CREATE_SUB_KEY:     uint32 = 0x0004u32;
+    pub const KEY_ENUMERATE_SUB_KEYS: uint32 = 0x0008u32;
+    pub const KEY_NOTIFY:             uint32 = 0x0010u32;
+    pub const KEY_CREATE_LINK:        uint32 = 0x0020u32;
+    pub const KEY_WOW64_64KEY:        uint32 = 0x0100u32;
+    pub const KEY_WOW64_32KEY:        uint32 = 0x0200u32;
+    pub const KEY_WRITE:              uint32 = 0x00020006u32;
+    pub const KEY_READ:               uint32 = 0x00020019u32;
+    pub const KEY_ALL_ACCESS:         uint32 = 0x000F003Fu32;
+
+
+    // Constants — Registry Value Types
+
+
+    pub const REG_NONE:                       uint32 = 0u32;
+    pub const REG_SZ:                         uint32 = 1u32;
+    pub const REG_EXPAND_SZ:                  uint32 = 2u32;
+    pub const REG_BINARY:                     uint32 = 3u32;
+    pub const REG_DWORD:                      uint32 = 4u32;
+    pub const REG_DWORD_LITTLE_ENDIAN:        uint32 = 4u32;
+    pub const REG_DWORD_BIG_ENDIAN:           uint32 = 5u32;
+    pub const REG_LINK:                       uint32 = 6u32;
+    pub const REG_MULTI_SZ:                   uint32 = 7u32;
+    pub const REG_QWORD:                      uint32 = 11u32;
+    pub const REG_QWORD_LITTLE_ENDIAN:        uint32 = 11u32;
+
+
+    // Constants — Service Control Manager Access
+
+
+    pub const SC_MANAGER_CONNECT:            uint32 = 0x0001u32;
+    pub const SC_MANAGER_CREATE_SERVICE:     uint32 = 0x0002u32;
+    pub const SC_MANAGER_ENUMERATE_SERVICE:  uint32 = 0x0004u32;
+    pub const SC_MANAGER_LOCK:               uint32 = 0x0008u32;
+    pub const SC_MANAGER_QUERY_LOCK_STATUS:  uint32 = 0x0010u32;
+    pub const SC_MANAGER_MODIFY_BOOT_CONFIG: uint32 = 0x0020u32;
+    pub const SC_MANAGER_ALL_ACCESS:         uint32 = 0x000F003Fu32;
+
+
+    // Constants — Service Access Rights
+
+
+    pub const SERVICE_QUERY_CONFIG:          uint32 = 0x0001u32;
+    pub const SERVICE_CHANGE_CONFIG:         uint32 = 0x0002u32;
+    pub const SERVICE_QUERY_STATUS:          uint32 = 0x0004u32;
+    pub const SERVICE_ENUMERATE_DEPENDENTS:  uint32 = 0x0008u32;
+    pub const SERVICE_START:                 uint32 = 0x0010u32;
+    pub const SERVICE_STOP:                  uint32 = 0x0020u32;
+    pub const SERVICE_PAUSE_CONTINUE:        uint32 = 0x0040u32;
+    pub const SERVICE_INTERROGATE:           uint32 = 0x0080u32;
+    pub const SERVICE_USER_DEFINED_CONTROL:  uint32 = 0x0100u32;
+    pub const SERVICE_ALL_ACCESS:            uint32 = 0x000F01FFu32;
+
+
+    // Constants — Service Types
+
+
+    pub const SERVICE_KERNEL_DRIVER:       uint32 = 0x00000001u32;
+    pub const SERVICE_FILE_SYSTEM_DRIVER:  uint32 = 0x00000002u32;
+    pub const SERVICE_WIN32_OWN_PROCESS:   uint32 = 0x00000010u32;
+    pub const SERVICE_WIN32_SHARE_PROCESS: uint32 = 0x00000020u32;
+    pub const SERVICE_INTERACTIVE_PROCESS: uint32 = 0x00000100u32;
+
+
+    // Constants — Service Start Types
+
+
+    pub const SERVICE_BOOT_START:   uint32 = 0x00000000u32;
+    pub const SERVICE_SYSTEM_START: uint32 = 0x00000001u32;
+    pub const SERVICE_AUTO_START:   uint32 = 0x00000002u32;
+    pub const SERVICE_DEMAND_START: uint32 = 0x00000003u32;
+    pub const SERVICE_DISABLED:     uint32 = 0x00000004u32;
+
+
+    // Constants — Service States
+
+
+    pub const SERVICE_STOPPED:          uint32 = 0x00000001u32;
+    pub const SERVICE_START_PENDING:    uint32 = 0x00000002u32;
+    pub const SERVICE_STOP_PENDING:     uint32 = 0x00000003u32;
+    pub const SERVICE_RUNNING:          uint32 = 0x00000004u32;
+    pub const SERVICE_CONTINUE_PENDING: uint32 = 0x00000005u32;
+    pub const SERVICE_PAUSE_PENDING:    uint32 = 0x00000006u32;
+    pub const SERVICE_PAUSED:           uint32 = 0x00000007u32;
+
+
+    // Constants — Service Control Codes
+
+
+    pub const SERVICE_CONTROL_STOP:       uint32 = 0x00000001u32;
+    pub const SERVICE_CONTROL_PAUSE:      uint32 = 0x00000002u32;
+    pub const SERVICE_CONTROL_CONTINUE:   uint32 = 0x00000003u32;
+    pub const SERVICE_CONTROL_INTERROGATE: uint32 = 0x00000004u32;
+    pub const SERVICE_CONTROL_SHUTDOWN:   uint32 = 0x00000005u32;
+
+
+    // Constants — Service Info Levels
+
+
+    pub const SERVICE_CONFIG_DESCRIPTION:              uint32 = 1u32;
+    pub const SERVICE_CONFIG_FAILURE_ACTIONS:          uint32 = 2u32;
+    pub const SERVICE_CONFIG_DELAYED_AUTO_START_INFO:  uint32 = 3u32;
+    pub const SERVICE_CONFIG_FAILURE_ACTIONS_FLAG:     uint32 = 4u32;
+    pub const SERVICE_CONFIG_SERVICE_SID_INFO:         uint32 = 5u32;
+    pub const SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO: uint32 = 6u32;
+    pub const SERVICE_CONFIG_PREFERRED_NODE:           uint32 = 9u32;
+
+
+    // Constants — Security Identifiers (Well-Known)
+
+
+    pub const SECURITY_NULL_SID_AUTHORITY:         uint32 = 0u32;
+    pub const SECURITY_WORLD_SID_AUTHORITY:        uint32 = 1u32;
+    pub const SECURITY_LOCAL_SID_AUTHORITY:        uint32 = 2u32;
+    pub const SECURITY_CREATOR_SID_AUTHORITY:      uint32 = 3u32;
+    pub const SECURITY_NT_AUTHORITY:               uint32 = 5u32;
+
+    pub const SECURITY_BUILTIN_DOMAIN_RID:         uint32 = 0x00000020u32;
+
+
+    // Constants — Token Access
+
+
+    pub const TOKEN_ASSIGN_PRIMARY:    uint32 = 0x0001u32;
+    pub const TOKEN_DUPLICATE:         uint32 = 0x0002u32;
+    pub const TOKEN_IMPERSONATE:       uint32 = 0x0004u32;
+    pub const TOKEN_QUERY:             uint32 = 0x0008u32;
+    pub const TOKEN_QUERY_SOURCE:      uint32 = 0x0010u32;
+    pub const TOKEN_ADJUST_PRIVILEGES: uint32 = 0x0020u32;
+    pub const TOKEN_ADJUST_GROUPS:     uint32 = 0x0040u32;
+    pub const TOKEN_ADJUST_DEFAULT:    uint32 = 0x0080u32;
+    pub const TOKEN_ALL_ACCESS:        uint32 = 0x000F00FFu32;
+    pub const TOKEN_READ:              uint32 = 0x00020008u32;
+    pub const TOKEN_WRITE:             uint32 = 0x000200E0u32;
+    pub const TOKEN_EXECUTE:           uint32 = 0x00020000u32;
+
+
+    // Constants — Token Information Classes
+
+
+    pub const TokenUser:          uint32 = 1u32;
+    pub const TokenGroups:        uint32 = 2u32;
+    pub const TokenPrivileges:    uint32 = 3u32;
+    pub const TokenOwner:         uint32 = 4u32;
+    pub const TokenPrimaryGroup:  uint32 = 5u32;
+    pub const TokenDefaultDacl:   uint32 = 6u32;
+    pub const TokenSource:        uint32 = 7u32;
+    pub const TokenType:          uint32 = 8u32;
+    pub const TokenImpersonationLevel: uint32 = 9u32;
+    pub const TokenStatistics:    uint32 = 10u32;
+    pub const TokenElevation:     uint32 = 20u32;
+    pub const TokenLinkedToken:   uint32 = 21u32;
+    pub const TokenElevationType: uint32 = 22u32;
+    pub const TokenIsVirtual:     uint32 = 24u32;
+
+
+    // Constants — Service Manager Enumeration
+
+
+    pub const SERVICE_DRIVER:              uint32 = 0x0000000Bu32;
+    pub const SERVICE_WIN32:               uint32 = 0x00000030u32;
+    pub const SERVICE_TYPE_ALL:            uint32 = 0x0000003Fu32;
+
+    pub const SERVICE_STATE_ACTIVE:        uint32 = 0x00000001u32;
+    pub const SERVICE_STATE_INACTIVE:      uint32 = 0x00000002u32;
+    pub const SERVICE_STATE_ALL:           uint32 = 0x00000003u32;
+
+
+    // Structures
+
+
+    pub struct ServiceStatus {
+        pub serviceType:             uint32;
+        pub currentState:            uint32;
+        pub controlsAccepted:        uint32;
+        pub win32ExitCode:           uint32;
+        pub serviceSpecificExitCode: uint32;
+        pub checkPoint:              uint32;
+        pub waitHint:                uint32;
+    }
+
+    pub struct TokenUserInfo {
+        pub user:     uint8[24]; // SID_AND_ATTRIBUTES
+    }
+
+    pub struct Luid {
+        pub lowPart:  uint32;
+        pub highPart: int32;
+    }
+
+    pub struct LuidAndAttributes {
+        pub luid:       Luid;
+        pub attributes: uint32;
+    }
+
+    pub struct TokenPrivilegesInfo {
+        pub privilegeCount: uint32;
+        pub privileges:     uint8[1]; // variable length array of LuidAndAttributes
+    }
+
+    pub struct FileTime {
+        pub lowDateTime:  uint32;
+        pub highDateTime: uint32;
+    }
+
+
+    // Extern — advapi32.dll
+
+
+    @[Import(lib: "advapi32.dll")]
+    extern {
+
+        func RegOpenKeyExA(
+            hKey: *opaque,
+            subKey: *const char8,
+            options: uint32,
+            desiredAccess: uint32,
+            result: *opaque
+        ) -> uint32;
+
+        func RegCreateKeyExA(
+            hKey: *opaque,
+            subKey: *const char8,
+            reserved: uint32,
+            classStr: *char8,
+            options: uint32,
+            desiredAccess: uint32,
+            securityAttr: *opaque,
+            result: *opaque,
+            disposition: *uint32
+        ) -> uint32;
+
+        func RegCloseKey(hKey: *opaque) -> uint32;
+        func RegDeleteKeyExA(hKey: *opaque, subKey: *const char8, accessMask: uint32, reserved: uint32) -> uint32;
+        func RegDeleteValueA(hKey: *opaque, valueName: *const char8) -> uint32;
+
+        func RegQueryValueExA(
+            hKey: *opaque,
+            valueName: *const char8,
+            reserved: *uint32,
+            dataType: *uint32,
+            data: *uint8,
+            dataSize: *uint32
+        ) -> uint32;
+
+        func RegSetValueExA(
+            hKey: *opaque,
+            valueName: *const char8,
+            reserved: uint32,
+            dataType: uint32,
+            data: *const uint8,
+            dataSize: uint32
+        ) -> uint32;
+
+        func RegEnumKeyExA(
+            hKey: *opaque,
+            index: uint32,
+            name: *char8,
+            nameSize: *uint32,
+            reserved: *uint32,
+            className: *char8,
+            classSize: *uint32,
+            lastWriteTime: *uint64
+        ) -> uint32;
+
+        func RegEnumValueA(
+            hKey: *opaque,
+            index: uint32,
+            valueName: *char8,
+            valueNameSize: *uint32,
+            reserved: *uint32,
+            dataType: *uint32,
+            data: *uint8,
+            dataSize: *uint32
+        ) -> uint32;
+
+        func RegFlushKey(hKey: *opaque) -> uint32;
+
+
+        func OpenSCManagerA(
+            machineName: *const char8,
+            databaseName: *const char8,
+            desiredAccess: uint32
+        ) -> *opaque;
+
+        func CloseServiceHandle(hSCObject: *opaque) -> bool32;
+
+        func CreateServiceA(
+            hSCManager: *opaque,
+            serviceName: *const char8,
+            displayName: *const char8,
+            desiredAccess: uint32,
+            serviceType: uint32,
+            startType: uint32,
+            errorControl: uint32,
+            binaryPath: *const char8,
+            loadOrderGroup: *const char8,
+            tagId: *uint32,
+            dependencies: *const char8,
+            account: *const char8,
+            password: *const char8
+        ) -> *opaque;
+
+        func OpenServiceA(
+            hSCManager: *opaque,
+            serviceName: *const char8,
+            desiredAccess: uint32
+        ) -> *opaque;
+
+        func DeleteService(hService: *opaque) -> bool32;
+        func StartServiceA(hService: *opaque, argc: uint32, argv: *opaque) -> bool32;
+        func ControlService(hService: *opaque, control: uint32, status: *opaque) -> bool32;
+        func QueryServiceStatus(hService: *opaque, status: *opaque) -> bool32;
+
+        func QueryServiceConfigA(
+            hService: *opaque,
+            config: *opaque,
+            bufSize: uint32,
+            bytesNeeded: *uint32
+        ) -> bool32;
+
+        func ChangeServiceConfigA(
+            hService: *opaque,
+            serviceType: uint32,
+            startType: uint32,
+            errorControl: uint32,
+            binaryPath: *const char8,
+            loadOrderGroup: *const char8,
+            tagId: *uint32,
+            dependencies: *const char8,
+            account: *const char8,
+            password: *const char8,
+            displayName: *const char8
+        ) -> bool32;
+
+        func EnumServicesStatusA(
+            hSCManager: *opaque,
+            serviceType: uint32,
+            state: uint32,
+            services: *opaque,
+            bufSize: uint32,
+            bytesNeeded: *uint32,
+            returned: *uint32,
+            resumeHandle: *uint32
+        ) -> bool32;
+
+
+        func OpenProcessToken(
+            processHandle: *opaque,
+            desiredAccess: uint32,
+            tokenHandle: *opaque
+        ) -> bool32;
+
+        func OpenThreadToken(
+            threadHandle: *opaque,
+            desiredAccess: uint32,
+            openAsSelf: bool32,
+            tokenHandle: *opaque
+        ) -> bool32;
+
+        func GetTokenInformation(
+            tokenHandle: *opaque,
+            infoClass: uint32,
+            tokenInfo: *opaque,
+            tokenInfoLength: uint32,
+            retLength: *uint32
+        ) -> bool32;
+
+        func LookupPrivilegeValueA(
+            systemName: *const char8,
+            privilegeName: *const char8,
+            luid: *Luid
+        ) -> bool32;
+
+        func AdjustTokenPrivileges(
+            tokenHandle: *opaque,
+            disableAll: bool32,
+            newState: *opaque,
+            bufferLength: uint32,
+            previousState: *opaque,
+            retLength: *uint32
+        ) -> bool32;
+
+        func ImpersonateLoggedOnUser(hToken: *opaque) -> bool32;
+        func RevertToSelf() -> bool32;
+
+
+        func InitializeSecurityDescriptor(sd: *opaque, revision: uint32) -> bool32;
+        func IsValidSecurityDescriptor(sd: *opaque) -> bool32;
+        func SetSecurityDescriptorDacl(
+            sd: *opaque,
+            daclPresent: bool32,
+            dacl: *opaque,
+            daclDefaulted: bool32
+        ) -> bool32;
+
+        func GetSecurityDescriptorDacl(
+            sd: *opaque,
+            daclPresent: *bool32,
+            dacl: *opaque,
+            daclDefaulted: *bool32
+        ) -> bool32;
+
+
+        func LookupAccountNameA(
+            systemName: *const char8,
+            accountName: *const char8,
+            sid: *opaque,
+            sidSize: *uint32,
+            domainName: *char8,
+            domainNameSize: *uint32,
+            sidUse: *uint32
+        ) -> bool32;
+
+        func LookupAccountSidA(
+            systemName: *const char8,
+            sid: *opaque,
+            name: *char8,
+            nameSize: *uint32,
+            domainName: *char8,
+            domainNameSize: *uint32,
+            sidUse: *uint32
+        ) -> bool32;
+    }
+
+
+    // Constants — Registry Create Disposition
+
+
+    pub const REG_CREATED_NEW_KEY:     uint32 = 0x00000001u32;
+    pub const REG_OPENED_EXISTING_KEY: uint32 = 0x00000002u32;
+
+
+    // Constants — Token Privilege Attributes
+
+
+    pub const SE_PRIVILEGE_ENABLED_BY_DEFAULT: uint32 = 0x00000001u32;
+    pub const SE_PRIVILEGE_ENABLED:            uint32 = 0x00000002u32;
+    pub const SE_PRIVILEGE_REMOVED:            uint32 = 0x00000004u32;
+
+
+    // Constants — SID Name Use
+
+
+    pub const SidTypeUser:           uint32 = 1u32;
+    pub const SidTypeGroup:          uint32 = 2u32;
+    pub const SidTypeDomain:         uint32 = 3u32;
+    pub const SidTypeAlias:          uint32 = 4u32;
+    pub const SidTypeWellKnownGroup: uint32 = 5u32;
+    pub const SidTypeDeletedAccount: uint32 = 6u32;
+    pub const SidTypeInvalid:        uint32 = 7u32;
+    pub const SidTypeUnknown:        uint32 = 8u32;
+    pub const SidTypeComputer:       uint32 = 9u32;
+    pub const SidTypeLabel:          uint32 = 10u32;
+
+
+    // Constants — SECURITY_DESCRIPTOR Revision
+
+
+    pub const SECURITY_DESCRIPTOR_REVISION: uint32 = 1u32;
+
+
+    // Wrappers — safe **opaque pattern (output handles via return value)
+
+
+    pub func OpenProcessTokenEx(hProcess: *opaque, access: uint32) -> *opaque {
+        var token: *opaque = null;
+        let ok = OpenProcessToken(hProcess, access, &token as *opaque);
+        if ok { return token; }
+        return null;
+    }
+
+    pub func OpenThreadTokenEx(hThread: *opaque, access: uint32, asSelf: bool32) -> *opaque {
+        var token: *opaque = null;
+        let ok = OpenThreadToken(hThread, access, asSelf, &token as *opaque);
+        if ok { return token; }
+        return null;
+    }
+
+    pub func RegOpenKeyA(hKey: uint, subKey: *const char8, access: uint32) -> *opaque {
+        var result: *opaque = null;
+        let ret = RegOpenKeyExA(hKey as *opaque, subKey, 0u32, access, &result as *opaque);
+        if ret == 0u32 { return result; }
+        return null;
+    }
+
+    pub func CreateKeyA(
+        hKey: uint,
+        subKey: *const char8,
+        options: uint32,
+        access: uint32,
+        dispositionOut: *uint32
+    ) -> *opaque {
+        var result: *opaque = null;
+        let ret = RegCreateKeyExA(
+            hKey as *opaque, subKey, 0u32, null,
+            options, access, null,
+            &result as *opaque, dispositionOut
+        );
+        if ret == 0u32 { return result; }
+        return null;
+    }
+}

@@ -1,0 +1,192 @@
+/*
+    Windows API — PE/COFF Structure Definitions
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+*/
+
+module Windows {
+
+
+    // IMAGE_DOS_HEADER  — the very first structure at offset 0 of every PE file
+
+
+    pub struct ImageDosHeader {
+        pub e_magic:    uint16;
+        pub e_cblp:     uint16;
+        pub e_cp:       uint16;
+        pub e_crlc:     uint16;
+        pub e_cparhdr:  uint16;
+        pub e_minalloc: uint16;
+        pub e_maxalloc: uint16;
+        pub e_ss:       uint16;
+        pub e_sp:       uint16;
+        pub e_csum:     uint16;
+        pub e_ip:       uint16;
+        pub e_cs:       uint16;
+        pub e_lfarlc:   uint16;
+        pub e_ovno:     uint16;
+        pub e_res:      uint16;
+        pub e_res2:     uint16;
+        pub e_res3:     uint16;
+        pub e_res4:     uint16;
+        pub e_oemid:    uint16;
+        pub e_oeminfo:  uint16;
+        pub e_res5:     uint16;
+        pub e_res6:     uint16;
+        pub e_res7:     uint16;
+        pub e_res8:     uint16;
+        pub e_res9:     uint16;
+        pub e_res10:    uint16;
+        pub e_res11:    uint16;
+        pub e_res12:    uint16;
+        pub e_res13:    uint16;
+        pub e_res14:    uint16;
+        pub e_lfanew:   int32;
+    }
+
+    pub const DOS_SIGNATURE: uint16 = 0x5A4Du16;
+
+    pub const NT_SIGNATURE: uint32 = 0x00004550u32;
+
+
+    // IMAGE_FILE_HEADER  — COFF file header embedded in IMAGE_NT_HEADERS
+
+
+    pub struct ImageFileHeader {
+        pub machine:              uint16;
+        pub numberOfSections:     uint16;
+        pub timeDateStamp:        uint32;
+        pub pointerToSymbolTable: uint32;
+        pub numberOfSymbols:      uint32;
+        pub sizeOfOptionalHeader: uint16;
+        pub characteristics:      uint16;
+    }
+
+    pub const IMAGE_FILE_MACHINE_AMD64: uint16 = 0x8664u16;
+    pub const IMAGE_FILE_MACHINE_I386:  uint16 = 0x014Cu16;
+    pub const IMAGE_FILE_MACHINE_ARM64: uint16 = 0xAA64u16;
+
+
+    // IMAGE_DATA_DIRECTORY  — one slot in the optional header's DataDirectory array
+
+
+    pub struct ImageDataDirectory {
+        pub virtualAddress: uint32;
+        pub size:           uint32;
+    }
+
+    pub const IMAGE_DIRECTORY_ENTRY_EXPORT:    uint32 = 0u32;
+    pub const IMAGE_DIRECTORY_ENTRY_IMPORT:    uint32 = 1u32;
+    pub const IMAGE_DIRECTORY_ENTRY_BASERELOC: uint32 = 5u32;
+    pub const IMAGE_DIRECTORY_ENTRY_TLS:       uint32 = 9u32;
+
+
+    // IMAGE_OPTIONAL_HEADER64  — the 64-bit optional header
+    // This is the critical structure that contains the DataDirectory.
+
+
+    pub struct ImageOptionalHeader64 {
+        pub magic:                    uint16;  // 0x020B for PE32+
+        pub majorLinkerVersion:       uint8;
+        pub minorLinkerVersion:       uint8;
+        pub sizeOfCode:               uint32;
+        pub sizeOfInitializedData:    uint32;
+        pub sizeOfUninitializedData:  uint32;
+        pub addressOfEntryPoint:      uint32;
+        pub baseOfCode:               uint32;
+        pub imageBase:                uint64;
+        pub sectionAlignment:         uint32;
+        pub fileAlignment:            uint32;
+        pub majorOsVersion:           uint16;
+        pub minorOsVersion:           uint16;
+        pub majorImageVersion:        uint16;
+        pub minorImageVersion:        uint16;
+        pub majorSubsystemVersion:    uint16;
+        pub minorSubsystemVersion:    uint16;
+        pub win32VersionValue:        uint32;
+        pub sizeOfImage:              uint32;
+        pub sizeOfHeaders:            uint32;
+        pub checkSum:                 uint32;
+        pub subsystem:                uint16;
+        pub dllCharacteristics:       uint16;
+        pub sizeOfStackReserve:       uint64;
+        pub sizeOfStackCommit:        uint64;
+        pub sizeOfHeapReserve:        uint64;
+        pub sizeOfHeapCommit:         uint64;
+        pub loaderFlags:              uint32;
+        pub numberOfRvaAndSizes:      uint32;
+        // DataDirectory[0]  Export Table
+        pub dataDirectoryExport:      ImageDataDirectory;
+        // DataDirectory[1]  Import Table  ← this is what IAT hooking uses
+        pub dataDirectoryImport:      ImageDataDirectory;
+        // DataDirectory[2..15]  (remaining entries)
+        pub dataDirectory2:           ImageDataDirectory;
+        pub dataDirectory3:           ImageDataDirectory;
+        pub dataDirectory4:           ImageDataDirectory;
+        pub dataDirectory5:           ImageDataDirectory;
+        pub dataDirectory6:           ImageDataDirectory;
+        pub dataDirectory7:           ImageDataDirectory;
+        pub dataDirectory8:           ImageDataDirectory;
+        pub dataDirectory9:           ImageDataDirectory;
+        pub dataDirectory10:          ImageDataDirectory;
+        pub dataDirectory11:          ImageDataDirectory;
+        pub dataDirectory12:          ImageDataDirectory;
+        pub dataDirectory13:          ImageDataDirectory;
+        pub dataDirectory14:          ImageDataDirectory;
+        pub dataDirectory15:          ImageDataDirectory;
+    }
+
+    pub const IMAGE_NT_OPTIONAL_HDR64_MAGIC: uint16 = 0x020Bu16;
+
+
+    // IMAGE_NT_HEADERS64  — the full NT headers block (PE signature + file + optional)
+
+
+    pub struct ImageNtHeaders64 {
+        pub signature:      uint32;
+        pub fileHeader:     ImageFileHeader;
+        pub optionalHeader: ImageOptionalHeader64;
+    }
+
+
+    // IMAGE_IMPORT_DESCRIPTOR  — one entry per imported DLL in the Import Table
+    // A null descriptor (all zeros) terminates the array.
+
+
+    pub struct ImageImportDescriptor {
+        pub originalFirstThunk: uint32;
+        pub timeDateStamp:      uint32;
+        pub forwarderChain:     uint32;
+        pub name:               uint32;
+        pub firstThunk:         uint32;
+    }
+
+
+    // IMAGE_IMPORT_BY_NAME  — points to an exported function by name + hint
+
+
+    pub struct ImageImportByName {
+        pub hint: uint16;
+        pub name: char8;
+    }
+
+
+    // IMAGE_EXPORT_DIRECTORY  — the export table structure
+    // Used for finding exported functions in a DLL (like a manual GetProcAddress)
+
+
+    pub struct ImageExportDirectory {
+        pub characteristics:       uint32;
+        pub timeDateStamp:         uint32;
+        pub majorVersion:          uint16;
+        pub minorVersion:          uint16;
+        pub name:                  uint32;
+        pub base:                  uint32;
+        pub numberOfFunctions:     uint32;
+        pub numberOfNames:         uint32;
+        pub addressOfFunctions:    uint32;
+        pub addressOfNames:        uint32;
+        pub addressOfNameOrdinals: uint32;
+    }
+
+}

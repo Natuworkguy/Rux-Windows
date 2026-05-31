@@ -1,10 +1,11 @@
 /*
-    Windows API
+    Windows API — Kernel32.dll (Core System Functions)
     Copyright © 2026 Rux Contributors
     Licensed under the MIT License
 */
 
 module Windows {
+
     /// The standard device for console input, output, and error
     /// https://learn.microsoft.com/en-us/windows/console/getstdhandle
     enum StdHandle: uint32 {
@@ -157,44 +158,361 @@ module Windows {
         Utf8 = 65001
     }
 
+
+    // Structures — Process, Memory, Thread
+
+
+    pub struct MemoryBasicInformation {
+        pub baseAddress:       *opaque;
+        pub allocationBase:    *opaque;
+        pub allocationProtect: uint32;
+        pub partitionId:       uint16;
+        pub _pad1:             uint16;
+        pub regionSize:        uint;
+        pub state:             uint32;
+        pub protect:           uint32;
+        pub type_:             uint32;
+        pub _pad2:             uint32;
+    }
+
+    pub struct ProcessEntry32 {
+        pub dwSize:              uint32;
+        pub cntUsage:            uint32;
+        pub th32ProcessID:       uint32;
+        pub th32DefaultHeapID:   uint;
+        pub th32ModuleID:        uint32;
+        pub cntThreads:          uint32;
+        pub th32ParentProcessID: uint32;
+        pub pcPriClassBase:      int32;
+        pub dwFlags:             uint32;
+        pub szExeFile:           char8[260];
+    }
+
+    pub struct ModuleEntry32 {
+        pub dwSize:         uint32;
+        pub th32ModuleID:   uint32;
+        pub th32ProcessID:  uint32;
+        pub glblcntUsage:   uint32;
+        pub proccntUsage:   uint32;
+        pub modBaseAddr:    *opaque;
+        pub modBaseSize:    uint32;
+        pub hModule:        *opaque;
+        pub szModule:       char8[256];
+        pub szExePath:      char8[260];
+    }
+
+    pub struct CriticalSection {
+        pub _opaque0: uint64;
+        pub _opaque1: uint64;
+        pub _opaque2: uint64;
+        pub _opaque3: uint64;
+        pub _opaque4: uint64;
+    }
+
+    pub struct Overlapped {
+        pub internal:     uint;
+        pub internalHigh: uint;
+        pub offset:       uint32;
+        pub offsetHigh:   uint32;
+        pub hEvent:       *opaque;
+    }
+
+    pub struct SystemTime {
+        pub year:         uint16;
+        pub month:        uint16;
+        pub dayOfWeek:    uint16;
+        pub day:          uint16;
+        pub hour:         uint16;
+        pub minute:       uint16;
+        pub second:       uint16;
+        pub milliseconds: uint16;
+    }
+
+    pub struct SystemInfo {
+        pub processorArchitecture: uint16;
+        pub _reserved:             uint16;
+        pub pageSize:              uint32;
+        pub minimumApplicationAddress: *opaque;
+        pub maximumApplicationAddress: *opaque;
+        pub activeProcessorMask:   *opaque;
+        pub numberOfProcessors:    uint32;
+        pub processorType:         uint32;
+        pub allocationGranularity: uint32;
+        pub processorLevel:        uint16;
+        pub processorRevision:     uint16;
+    }
+
+    pub struct MemoryStatusEx {
+        pub length:                uint32;
+        pub _pad1:                 uint32;
+        pub memoryLoad:            uint32;
+        pub _pad2:                 uint32;
+        pub totalPhys:             uint64;
+        pub availPhys:             uint64;
+        pub totalPageFile:         uint64;
+        pub availPageFile:         uint64;
+        pub totalVirtual:          uint64;
+        pub availVirtual:          uint64;
+        pub availExtendedVirtual:  uint64;
+    }
+
+
+    // Constants — Process Access Rights
+
+
+    pub const PROCESS_ALL_ACCESS:               uint32 = 0x001FFFFFu32;
+    pub const PROCESS_CREATE_THREAD:            uint32 = 0x00000002u32;
+    pub const PROCESS_VM_OPERATION:             uint32 = 0x00000008u32;
+    pub const PROCESS_VM_READ:                  uint32 = 0x00000010u32;
+    pub const PROCESS_VM_WRITE:                 uint32 = 0x00000020u32;
+    pub const PROCESS_QUERY_INFORMATION:        uint32 = 0x00000400u32;
+    pub const PROCESS_TERMINATE:                uint32 = 0x00000001u32;
+    pub const PROCESS_SUSPEND_RESUME:           uint32 = 0x00000800u32;
+    pub const PROCESS_DUP_HANDLE:               uint32 = 0x00000040u32;
+    pub const PROCESS_QUERY_LIMITED_INFORMATION: uint32 = 0x00001000u32;
+    pub const PROCESS_SET_SESSIONID:            uint32 = 0x00000004u32;
+    pub const PROCESS_CREATE_PROCESS:           uint32 = 0x00000080u32;
+    pub const PROCESS_SET_INFORMATION:          uint32 = 0x00000200u32;
+    pub const PROCESS_SET_QUOTA:                uint32 = 0x00000100u32;
+    pub const SYNCHRONIZE:                      uint32 = 0x00100000u32;
+
+
+    // Constants — Virtual Memory Allocation Types
+
+
+    pub const MEM_COMMIT:                       uint32 = 0x00001000u32;
+    pub const MEM_RESERVE:                      uint32 = 0x00002000u32;
+    pub const MEM_DECOMMIT:                     uint32 = 0x00004000u32;
+    pub const MEM_RELEASE:                      uint32 = 0x00008000u32;
+    pub const MEM_FREE:                         uint32 = 0x00010000u32;
+    pub const MEM_RESET:                        uint32 = 0x00080000u32;
+    pub const MEM_TOP_DOWN:                     uint32 = 0x00100000u32;
+    pub const MEM_LARGE_PAGES:                  uint32 = 0x20000000u32;
+    pub const MEM_PHYSICAL:                     uint32 = 0x00400000u32;
+    pub const MEM_COMMIT_RESERVE:               uint32 = 0x00003000u32;
+
+
+    // Constants — Memory Protection
+
+
+    pub const PAGE_NOACCESS:                    uint32 = 0x01u32;
+    pub const PAGE_READONLY:                    uint32 = 0x02u32;
+    pub const PAGE_READWRITE:                   uint32 = 0x04u32;
+    pub const PAGE_WRITECOPY:                   uint32 = 0x08u32;
+    pub const PAGE_EXECUTE:                     uint32 = 0x10u32;
+    pub const PAGE_EXECUTE_READ:                uint32 = 0x20u32;
+    pub const PAGE_EXECUTE_READWRITE:           uint32 = 0x40u32;
+    pub const PAGE_EXECUTE_WRITECOPY:           uint32 = 0x80u32;
+    pub const PAGE_GUARD:                       uint32 = 0x100u32;
+    pub const PAGE_NOCACHE:                     uint32 = 0x200u32;
+
+
+    // Constants — Memory State
+
+
+    pub const MEM_PRIVATE:                      uint32 = 0x00020000u32;
+    pub const MEM_MAPPED:                       uint32 = 0x00040000u32;
+    pub const MEM_IMAGE:                        uint32 = 0x01000000u32;
+
+
+    // Constants — Thread Creation Flags
+
+
+    pub const CREATE_SUSPENDED:                 uint32 = 0x00000004u32;
+    pub const STACK_SIZE_PARAM_IS_A_RESERVATION: uint32 = 0x00010000u32;
+
+
+    // Constants — Thread Access Rights
+
+
+    pub const THREAD_TERMINATE:                 uint32 = 0x0001u32;
+    pub const THREAD_SUSPEND_RESUME:            uint32 = 0x0002u32;
+    pub const THREAD_GET_CONTEXT:               uint32 = 0x0008u32;
+    pub const THREAD_SET_CONTEXT:               uint32 = 0x0010u32;
+    pub const THREAD_QUERY_INFORMATION:         uint32 = 0x0040u32;
+    pub const THREAD_SET_INFORMATION:           uint32 = 0x0020u32;
+    pub const THREAD_SET_THREAD_TOKEN:          uint32 = 0x0080u32;
+    pub const THREAD_IMPERSONATE:               uint32 = 0x0100u32;
+    pub const THREAD_DIRECT_IMPERSONATION:      uint32 = 0x0200u32;
+    pub const THREAD_ALL_ACCESS:                uint32 = 0x001FFFFFu32;
+
+
+    // Constants — Thread Priority
+
+
+    pub const THREAD_PRIORITY_IDLE:             int32 = -15i32;
+    pub const THREAD_PRIORITY_LOWEST:           int32 = -2i32;
+    pub const THREAD_PRIORITY_BELOW_NORMAL:     int32 = -1i32;
+    pub const THREAD_PRIORITY_NORMAL:           int32 = 0i32;
+    pub const THREAD_PRIORITY_ABOVE_NORMAL:     int32 = 1i32;
+    pub const THREAD_PRIORITY_HIGHEST:          int32 = 2i32;
+    pub const THREAD_PRIORITY_TIME_CRITICAL:    int32 = 15i32;
+
+
+    // Constants — Wait / Sync
+
+
+    pub const INFINITE:                         uint32 = 0xFFFFFFFFu32;
+    pub const WAIT_OBJECT_0:                    uint32 = 0x00000000u32;
+    pub const WAIT_TIMEOUT:                     uint32 = 0x00000102u32;
+    pub const WAIT_ABANDONED:                   uint32 = 0x00000080u32;
+    pub const WAIT_FAILED:                      uint32 = 0xFFFFFFFFu32;
+    pub const STILL_ACTIVE:                     uint32 = 0x00000103u32;
+    pub const INVALID_HANDLE_VALUE:             uint = 0xFFFFFFFFFFFFFFFFu;
+
+
+    // Constants — DLL Notification Codes
+
+
+    pub const DLL_PROCESS_DETACH:               uint32 = 0u32;
+    pub const DLL_PROCESS_ATTACH:               uint32 = 1u32;
+    pub const DLL_THREAD_ATTACH:                uint32 = 2u32;
+    pub const DLL_THREAD_DETACH:                uint32 = 3u32;
+
+
+    // Constants — DLL Characteristics
+
+
+    pub const IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA:   uint16 = 0x0020u16;
+    pub const IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE:      uint16 = 0x0040u16;
+    pub const IMAGE_DLLCHARACTERISTICS_NX_COMPAT:         uint16 = 0x0100u16;
+    pub const IMAGE_DLLCHARACTERISTICS_NO_SEH:            uint16 = 0x0400u16;
+    pub const IMAGE_DLLCHARACTERISTICS_NO_BIND:           uint16 = 0x0800u16;
+    pub const IMAGE_DLLCHARACTERISTICS_APPCONTAINER:      uint16 = 0x1000u16;
+    pub const IMAGE_DLLCHARACTERISTICS_GUARD_CF:          uint16 = 0x4000u16;
+    pub const IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE: uint16 = 0x8000u16;
+    pub const IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY:   uint16 = 0x0080u16;
+    pub const IMAGE_DLLCHARACTERISTICS_WDM_DRIVER:        uint16 = 0x2000u16;
+
+
+    // Constants — Toolhelp32 Snapshot Flags
+
+
+    pub const TH32CS_SNAPHEAPLIST:              uint32 = 0x00000001u32;
+    pub const TH32CS_SNAPPROCESS:               uint32 = 0x00000002u32;
+    pub const TH32CS_SNAPTHREAD:                uint32 = 0x00000004u32;
+    pub const TH32CS_SNAPMODULE:                uint32 = 0x00000008u32;
+    pub const TH32CS_SNAPMODULE32:              uint32 = 0x00000010u32;
+    pub const TH32CS_SNAPALL:                   uint32 = 0x0000000Fu32;
+
+
+    // Constants — LoadLibraryEx Flags
+
+
+    pub const LOAD_LIBRARY_SEARCH_APPLICATION_DIR: uint32 = 0x00000200u32;
+    pub const LOAD_LIBRARY_SEARCH_SYSTEM32:        uint32 = 0x00000800u32;
+    pub const LOAD_LIBRARY_SEARCH_DEFAULT_DIRS:    uint32 = 0x00001000u32;
+    pub const LOAD_LIBRARY_AS_DATAFILE:            uint32 = 0x00000002u32;
+
+
+    // Constants — TLS
+
+
+    pub const TLS_OUT_OF_INDEXES:               uint32 = 0xFFFFFFFFu32;
+
+
+    // Constants — FormatMessage
+
+
+    pub const FORMAT_MESSAGE_ALLOCATE_BUFFER:   uint32 = 0x00000100u32;
+    pub const FORMAT_MESSAGE_IGNORE_INSERTS:    uint32 = 0x00000200u32;
+    pub const FORMAT_MESSAGE_FROM_SYSTEM:       uint32 = 0x00001000u32;
+    pub const FORMAT_MESSAGE_FROM_MODULE:       uint32 = 0x00000800u32;
+
+
+    // Constants — GetModuleHandleEx Flags
+
+
+    pub const GET_MODULE_HANDLE_EX_FLAG_PIN:                uint32 = 0x00000001u32;
+    pub const GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT: uint32 = 0x00000002u32;
+    pub const GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS:       uint32 = 0x00000004u32;
+
+
+    // Constants — File Creation / Access
+
+
+    pub const INVALID_FILE_SIZE:                uint32 = 0xFFFFFFFFu32;
+    pub const INVALID_SET_FILE_POINTER:         uint32 = 0xFFFFFFFFu32;
+    pub const FILE_BEGIN:                       uint32 = 0u32;
+    pub const FILE_CURRENT:                     uint32 = 1u32;
+    pub const FILE_END:                         uint32 = 2u32;
+
+    pub const GENERIC_READ:                     uint32 = 0x80000000u32;
+    pub const GENERIC_WRITE:                    uint32 = 0x40000000u32;
+    pub const GENERIC_EXECUTE:                  uint32 = 0x20000000u32;
+    pub const GENERIC_ALL:                      uint32 = 0x10000000u32;
+
+    pub const CREATE_NEW:                       uint32 = 1u32;
+    pub const CREATE_ALWAYS:                    uint32 = 2u32;
+    pub const OPEN_EXISTING:                    uint32 = 3u32;
+    pub const OPEN_ALWAYS:                      uint32 = 4u32;
+    pub const TRUNCATE_EXISTING:                uint32 = 5u32;
+
+    pub const FILE_SHARE_READ:                  uint32 = 0x00000001u32;
+    pub const FILE_SHARE_WRITE:                 uint32 = 0x00000002u32;
+    pub const FILE_SHARE_DELETE:                uint32 = 0x00000004u32;
+
+    pub const FILE_ATTRIBUTE_READONLY:          uint32 = 0x00000001u32;
+    pub const FILE_ATTRIBUTE_HIDDEN:            uint32 = 0x00000002u32;
+    pub const FILE_ATTRIBUTE_SYSTEM:            uint32 = 0x00000004u32;
+    pub const FILE_ATTRIBUTE_DIRECTORY:         uint32 = 0x00000010u32;
+    pub const FILE_ATTRIBUTE_ARCHIVE:           uint32 = 0x00000020u32;
+    pub const FILE_ATTRIBUTE_NORMAL:            uint32 = 0x00000080u32;
+    pub const FILE_ATTRIBUTE_TEMPORARY:         uint32 = 0x00000100u32;
+    pub const FILE_ATTRIBUTE_COMPRESSED:        uint32 = 0x00000800u32;
+
+    pub const DRIVE_UNKNOWN:                    uint32 = 0u32;
+    pub const DRIVE_NO_ROOT_DIR:                uint32 = 1u32;
+    pub const DRIVE_REMOVABLE:                  uint32 = 2u32;
+    pub const DRIVE_FIXED:                      uint32 = 3u32;
+    pub const DRIVE_REMOTE:                     uint32 = 4u32;
+    pub const DRIVE_CDROM:                      uint32 = 5u32;
+    pub const DRIVE_RAMDISK:                    uint32 = 6u32;
+
+
+    // Constants — Console
+
+
+    pub const STD_INPUT_HANDLE:                 uint32 = 0xFFFFFFF6u32;
+    pub const STD_OUTPUT_HANDLE:                uint32 = 0xFFFFFFF5u32;
+    pub const STD_ERROR_HANDLE:                 uint32 = 0xFFFFFFF4u32;
+
+
+    // Extern — kernel32.dll (Core Functions)
+
+
     @[Import(lib: "kernel32.dll")]
     extern {
+        // Console
         /// Allocates a new console for the calling process
         /// https://learn.microsoft.com/en-us/windows/console/allocconsole
         func AllocConsole() -> bool32;
-
         /// Generates simple tones on the speaker
         /// https://learn.microsoft.com/en-us/windows/win32/api/utilapiset/nf-utilapiset-beep
-        func Beep(freq: uint32, duration: uint32) -> bool32;    
-
+        func Beep(freq: uint32, duration: uint32) -> bool32;
         /// Ends the calling process and all its threads
         /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess
         func ExitProcess(exitCode: uint32);
-
-        // Retrieves the calling thread's last-error code value
-        // https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+        
+        // Error handling
         func GetLastError() -> uint32;
-
+        func SetLastError(error: uint32);
+        
+        // Heap management
         /// Retrieves a handle to the default heap of the calling process
         /// https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-getprocessheap
         func GetProcessHeap() -> *opaque;
-
-        // Retrieves a handle to the specified standard device (standard input, standard output, or standard error)
-        // https://learn.microsoft.com/en-us/windows/console/getstdhandle
-        func GetStdHandle(stdHandle: uint32) -> *opaque;
-
         /// Allocates a block of memory from a heap. The allocated memory is not movable
         /// https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-heapalloc
         func HeapAlloc(heap: *opaque, flags: uint32, bytes: uint) -> *opaque;
-
         /// Frees a memory block allocated from a heap by the HeapAlloc or HeapReAlloc function
         /// https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-heapfree
         func HeapFree(heap: *opaque, flags: uint32, mem: *opaque) -> bool32;
-
         /// Reallocates a block of memory from a heap
         /// https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-heaprealloc
         func HeapReAlloc(heap: *opaque, flags: uint32, mem: *opaque, bytes: uint) -> *opaque;
-
+        
+        // String conversion
         /// Maps a character string to a UTF-16 wide character string
         /// https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
         func MultiByteToWideChar(
@@ -204,52 +522,261 @@ module Windows {
             multiByte: int32,
             wideCharStr: *char16,
             wideChar: int32) -> int32;
-
+        
+        // Memory utilities (RTL functions)
         /// Compares two blocks of memory and returns the number of bytes that match until the first difference
         /// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcomparememory
         func RtlCompareMemory(source1: *const opaque, source2: *const opaque, length: uint) -> uint;
-
         /// Copies a block of memory from one location to another
         /// https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366535(v=vs.85)
         func RtlCopyMemory(destination: *opaque, source: *const opaque, length: uint);
-
         /// Fills a block of memory with the specified fill value
         /// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlfillmemory
         func RtlFillMemory(destination: *opaque, length: uint, fill: int32);
-
         /// Fills a block of memory with zeros, given a pointer to the block and the length in bytes
         /// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlzeromemory
         func RtlZeroMemory(destination: *opaque, length: uint);
-
+        
+        // Timing
         /// Suspends the execution of the current thread until the time-out interval elapses
         /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep
         func Sleep(milliseconds: uint32);
-
-        // Reads data from the specified file or input/output (I/O) device
-        // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
+        func GetTickCount() -> uint32;
+        func GetTickCount64() -> uint64;
+        func QueryPerformanceCounter(counterOut: *uint64) -> bool32;
+        func QueryPerformanceFrequency(freqOut: *uint64) -> bool32;
+        func GetSystemTimeAsFileTime(time: *uint64);
+        
+        // File I/O
         func ReadFile(
             file: *opaque,
             buffer: *opaque,
             numberOfBytesToRead: uint32,
             numberOfBytesRead: *uint32,
             overlapped: *opaque) -> bool32;
-
-        // Writes a character string to a console screen buffer beginning at the current cursor location
-        // https://learn.microsoft.com/en-us/windows/console/writeconsole
+        
+        func WriteFile(
+            file: *opaque,
+            buffer: *const opaque,
+            bytesToWrite: uint32,
+            bytesWritten: *uint32,
+            overlapped: *opaque) -> bool32;
+        
+        // Console output
         func WriteConsoleA(
             consoleOutput: *opaque,
             buffer: *const char8,
             numberOfCharsToWrite: uint32,
             numberOfCharsWritten: *uint32,
             reserved: *opaque) -> bool32;
-
-        // Writes a character string to a console screen buffer beginning at the current cursor location
-        // https://learn.microsoft.com/en-us/windows/console/writeconsole
+        
         func WriteConsoleW(
             consoleOutput: *opaque,
             buffer: *const char16,
             numberOfCharsToWrite: uint32,
             numberOfCharsWritten: *uint32,
             reserved: *opaque) -> bool32;
+        
+        // Interlocked operations for thread safety
+        func InterlockedExchangePointer(target: *opaque, value: *opaque) -> *opaque;
+        func InterlockedCompareExchangePointer(target: *opaque, exchange: *opaque, comparand: *opaque) -> *opaque;
+        func InterlockedExchange(target: *int32, value: int32) -> int32;
+        func InterlockedCompareExchange(target: *int32, exchange: int32, comparand: int32) -> int32;
+        
+        // WOW64 detection
+        func IsWow64Process(hProcess: *opaque, wow64Process: *bool32) -> bool32;
     }
+
+
+    // Extern — kernel32.dll (Process, Memory, DLL, Thread, Sync)
+
+
+    @[Import(lib: "kernel32.dll")]
+    extern {
+        // Process management
+        func OpenProcess(desiredAccess: uint32, inheritHandle: bool32, processId: uint32) -> *opaque;
+        func CloseHandle(handle: *opaque) -> bool32;
+        func TerminateProcess(hProcess: *opaque, exitCode: uint32) -> bool32;
+        func GetCurrentProcess() -> *opaque;
+        func GetCurrentProcessId() -> uint32;
+        func GetExitCodeProcess(hProcess: *opaque, exitCode: *uint32) -> bool32;
+        func QueryFullProcessImageNameA(hProcess: *opaque, flags: uint32, name: *char8, size: *uint32) -> bool32;
+        
+        // Process memory
+        func ReadProcessMemory(hProcess: *opaque, baseAddress: *const opaque, buffer: *opaque, size: uint, bytesRead: *uint) -> bool32;
+        func WriteProcessMemory(hProcess: *opaque, baseAddress: *opaque, buffer: *const opaque, size: uint, bytesWritten: *uint) -> bool32;
+        
+        // Virtual memory (remote)
+        func VirtualAllocEx(hProcess: *opaque, address: *opaque, size: uint, allocationType: uint32, protect: uint32) -> *opaque;
+        func VirtualFreeEx(hProcess: *opaque, address: *opaque, size: uint, freeType: uint32) -> bool32;
+        func VirtualProtectEx(hProcess: *opaque, address: *opaque, size: uint, newProtect: uint32, oldProtect: *uint32) -> bool32;
+        func VirtualQueryEx(hProcess: *opaque, address: *const opaque, buffer: *opaque, length: uint) -> uint;
+        
+        // Virtual memory (local)
+        func VirtualAlloc(address: *opaque, size: uint, allocationType: uint32, protect: uint32) -> *opaque;
+        func VirtualFree(address: *opaque, size: uint, freeType: uint32) -> bool32;
+        func VirtualProtect(address: *opaque, size: uint, newProtect: uint32, oldProtect: *uint32) -> bool32;
+        func VirtualQuery(address: *const opaque, buffer: *opaque, length: uint) -> uint;
+        
+        // Remote threads
+        func CreateRemoteThread(hProcess: *opaque, threadAttr: *opaque, stackSize: uint, startAddress: *const opaque, parameter: *opaque, creationFlags: uint32, threadId: *uint32) -> *opaque;
+        
+        // Synchronization
+        func WaitForSingleObject(hHandle: *opaque, milliseconds: uint32) -> uint32;
+        func WaitForMultipleObjects(count: uint32, handles: *opaque, waitAll: bool32, milliseconds: uint32) -> uint32;
+        
+        // DLL management
+        func LoadLibraryA(libFileName: *const char8) -> *opaque;
+        func LoadLibraryW(libFileName: *const char16) -> *opaque;
+        func LoadLibraryExA(libFileName: *const char8, file: *opaque, flags: uint32) -> *opaque;
+        func GetModuleHandleA(moduleName: *const char8) -> *opaque;
+        func GetModuleHandleW(moduleName: *const char16) -> *opaque;
+        func GetProcAddress(hModule: *opaque, procName: *const char8) -> *const opaque;
+        func FreeLibrary(hModule: *opaque) -> bool32;
+        func GetModuleFileNameA(hModule: *opaque, filename: *char8, size: uint32) -> uint32;
+        func DisableThreadLibraryCalls(hModule: *opaque) -> bool32;
+        func SetDllDirectoryA(pathName: *const char8) -> bool32;
+        func GetModuleHandleExA(flags: uint32, name: *const char8, hModule: *opaque) -> bool32;
+        
+        // Toolhelp32 snapshot (process/module enumeration)
+        func CreateToolhelp32Snapshot(flags: uint32, processId: uint32) -> *opaque;
+        func Process32First(hSnapshot: *opaque, entry: *ProcessEntry32) -> bool32;
+        func Process32Next(hSnapshot: *opaque, entry: *ProcessEntry32) -> bool32;
+        func Module32First(hSnapshot: *opaque, entry: *ModuleEntry32) -> bool32;
+        func Module32Next(hSnapshot: *opaque, entry: *ModuleEntry32) -> bool32;
+        
+        // Thread management
+        func CreateThread(threadAttr: *opaque, stackSize: uint, startAddress: *const opaque, parameter: *opaque, flags: uint32, threadId: *uint32) -> *opaque;
+        func OpenThread(desiredAccess: uint32, inheritHandle: bool32, threadId: uint32) -> *opaque;
+        func GetCurrentThread() -> *opaque;
+        func GetCurrentThreadId() -> uint32;
+        func ExitThread(exitCode: uint32);
+        func TerminateThread(hThread: *opaque, exitCode: uint32) -> bool32;
+        func GetExitCodeThread(hThread: *opaque, exitCode: *uint32) -> bool32;
+        
+        // Thread control
+        func SuspendThread(hThread: *opaque) -> uint32;
+        func ResumeThread(hThread: *opaque) -> uint32;
+        func SetThreadPriority(hThread: *opaque, priority: int32) -> bool32;
+        func GetThreadPriority(hThread: *opaque) -> int32;
+        func SwitchToThread() -> bool32;
+        
+        // Event objects
+        func CreateEventA(eventAttr: *opaque, manualReset: bool32, initialState: bool32, name: *const char8) -> *opaque;
+        func SetEvent(hEvent: *opaque) -> bool32;
+        func ResetEvent(hEvent: *opaque) -> bool32;
+        
+        // Mutex objects
+        func CreateMutexA(mutexAttr: *opaque, initialOwner: bool32, name: *const char8) -> *opaque;
+        func ReleaseMutex(hMutex: *opaque) -> bool32;
+        
+        // Critical sections
+        func InitializeCriticalSection(cs: *opaque);
+        func EnterCriticalSection(cs: *opaque);
+        func LeaveCriticalSection(cs: *opaque);
+        func DeleteCriticalSection(cs: *opaque);
+        
+        // Thread Local Storage
+        func TlsAlloc() -> uint32;
+        func TlsSetValue(tlsIndex: uint32, tlsValue: *opaque) -> bool32;
+        func TlsGetValue(tlsIndex: uint32) -> *opaque;
+        func TlsFree(tlsIndex: uint32) -> bool32;
+        
+        // System directories
+        func GetSystemDirectoryA(buffer: *char8, size: uint32) -> uint32;
+        func GetWindowsDirectoryA(buffer: *char8, size: uint32) -> uint32;
+        
+        // Debugging
+        func OutputDebugStringA(outputString: *const char8);
+        
+        // Cache control
+        func FlushInstructionCache(hProcess: *opaque, baseAddress: *const opaque, size: uint) -> bool32;
+        
+        // Error formatting
+        func FormatMessageA(
+            flags: uint32,
+            source: *opaque,
+            messageId: uint32,
+            langId: uint32,
+            buffer: *char8,
+            size: uint32,
+            args: *opaque
+        ) -> uint32;
+        
+        // Environment / System info
+        func GetTempPathA(bufLen: uint32, buf: *char8) -> uint32;
+        func GetComputerNameA(buf: *char8, size: *uint32) -> bool32;
+        func ExpandEnvironmentStringsA(src: *const char8, dst: *char8, size: uint32) -> uint32;
+        func GetEnvironmentVariableA(name: *const char8, buf: *char8, size: uint32) -> uint32;
+        func SetEnvironmentVariableA(name: *const char8, value: *const char8) -> bool32;
+        
+        // Locale / Code page
+        func GetUserDefaultLCID() -> uint32;
+        func GetACP() -> uint32;
+        
+        // File operations
+        func CreateFileA(
+            fileName: *const char8,
+            desiredAccess: uint32,
+            shareMode: uint32,
+            securityAttr: *opaque,
+            creationDisposition: uint32,
+            flagsAndAttributes: uint32,
+            templateFile: *opaque
+        ) -> *opaque;
+        
+        func GetFileSizeEx(file: *opaque, size: *uint64) -> bool32;
+        func SetFilePointerEx(
+            file: *opaque,
+            distance: int64,
+            newPtr: *int64,
+            moveMethod: uint32
+        ) -> bool32;
+        
+        func GetFileAttributesA(fileName: *const char8) -> uint32;
+        func SetFileAttributesA(fileName: *const char8, attrs: uint32) -> bool32;
+        func GetFileType(hFile: *opaque) -> uint32;
+        
+        func CopyFileA(existing: *const char8, newFile: *const char8, failIfExists: bool32) -> bool32;
+        func MoveFileA(existing: *const char8, newFile: *const char8) -> bool32;
+        func DeleteFileA(fileName: *const char8) -> bool32;
+        
+        // Directory operations
+        func CreateDirectoryA(path: *const char8, securityAttr: *opaque) -> bool32;
+        func RemoveDirectoryA(path: *const char8) -> bool32;
+        func GetCurrentDirectoryA(bufLen: uint32, buf: *char8) -> uint32;
+        func SetCurrentDirectoryA(path: *const char8) -> bool32;
+        func GetLogicalDrives() -> uint32;
+        func GetDriveTypeA(rootPath: *const char8) -> uint32;
+        func GetDiskFreeSpaceExA(
+            dir: *const char8,
+            freeBytesAvail: *uint64,
+            totalBytes: *uint64,
+            totalFree: *uint64
+        ) -> bool32;
+        
+        // System information
+        func GetSystemInfo(info: *opaque);
+        func GetNativeSystemInfo(info: *opaque);
+        func GlobalMemoryStatusEx(buffer: *opaque) -> bool32;
+        func GetLogicalProcessorInformation(buffer: *opaque, retLen: *uint32) -> bool32;
+        
+        // Time functions
+        func GetSystemTime(time: *opaque);
+        func SetSystemTime(time: *opaque) -> bool32;
+        func GetLocalTime(time: *opaque);
+        func SetLocalTime(time: *opaque) -> bool32;
+        func FileTimeToLocalFileTime(inFileTime: *uint64, outLocal: *uint64) -> bool32;
+        func FileTimeToSystemTime(inFileTime: *uint64, systemTime: *opaque) -> bool32;
+        func SystemTimeToFileTime(systemTime: *opaque, fileTime: *uint64) -> bool32;
+        func CompareFileTime(time1: *uint64, time2: *uint64) -> int32;
+        
+        // Console control
+        func SetConsoleTitleA(title: *const char8) -> bool32;
+        func GetConsoleTitleA(buf: *char8, size: uint32) -> uint32;
+        func GetConsoleMode(console: *opaque, mode: *uint32) -> bool32;
+        func SetConsoleMode(console: *opaque, mode: uint32) -> bool32;
+        func SetConsoleTextAttribute(console: *opaque, attrs: uint16) -> bool32;
+    }
+
 }

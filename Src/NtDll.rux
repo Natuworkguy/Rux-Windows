@@ -1,0 +1,197 @@
+/*
+    Windows API — Native API (ntdll.dll)
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+*/
+
+module Windows {
+
+
+    // Constants — NTSTATUS
+
+
+    pub const STATUS_SUCCESS:                uint32 = 0x00000000u32;
+    pub const STATUS_INFO_LENGTH_MISMATCH:   uint32 = 0xC0000004u32;
+    pub const STATUS_NOT_FOUND:              uint32 = 0xC0000225u32;
+    pub const STATUS_ACCESS_DENIED:          uint32 = 0xC0000022u32;
+    pub const STATUS_BUFFER_TOO_SMALL:       uint32 = 0xC0000023u32;
+    pub const STATUS_PROCESS_IS_TERMINATING: uint32 = 0xC000010Au32;
+
+
+    // Constants — Process Information Classes (NtQueryInformationProcess)
+
+
+    pub const ProcessBasicInformation:       uint32 = 0u32;
+    pub const ProcessQuotaLimits:            uint32 = 1u32;
+    pub const ProcessIoCounters:             uint32 = 2u32;
+    pub const ProcessVmCounters:             uint32 = 3u32;
+    pub const ProcessTimes:                  uint32 = 4u32;
+    pub const ProcessBasePriority:           uint32 = 5u32;
+    pub const ProcessRaisePriority:          uint32 = 6u32;
+    pub const ProcessDebugPort:              uint32 = 7u32;
+    pub const ProcessWow64Info:              uint32 = 26u32;
+    pub const ProcessImageFileName:          uint32 = 27u32;
+    pub const ProcessBreakOnTermination:     uint32 = 29u32;
+    pub const ProcessSubsystemInformation:   uint32 = 75u32;
+
+
+    // Constants — System Information Classes (NtQuerySystemInformation)
+
+
+    pub const SystemBasicInformation:                uint32 = 0u32;
+    pub const SystemPerformanceInformation:          uint32 = 2u32;
+    pub const SystemProcessInformation:              uint32 = 5u32;
+    pub const SystemProcessorPerformanceInformation: uint32 = 8u32;
+    pub const SystemModuleInformation:               uint32 = 11u32;
+    pub const SystemKernelDebuggerInformation:       uint32 = 35u32;
+    pub const SystemHandleInformation:               uint32 = 16u32;
+    pub const SystemObjectInformation:               uint32 = 17u32;
+    pub const SystemCodeIntegrityInformation:        uint32 = 103u32;
+    pub const SystemFlagsInformation:                uint32 = 9u32;
+
+
+    // Structures
+
+
+    pub struct ProcessBasicInfo {
+        pub exitStatus:                  uint32;
+        pub _pad1:                       uint32;
+        pub pebBaseAddress:              *opaque;
+        pub affinityMask:                *opaque;
+        pub basePriority:                int32;
+        pub _pad2:                       uint32;
+        pub uniqueProcessId:             *opaque;
+        pub inheritedFromUniqueProcessId: *opaque;
+    }
+
+    pub struct OsVersionInfo {
+        pub osVersionInfoSize: uint32;
+        pub majorVersion:      uint32;
+        pub minorVersion:      uint32;
+        pub buildNumber:       uint32;
+        pub platformId:        uint32;
+        pub csdVersion:        char16[128];
+    }
+
+    pub struct IoCounters {
+        pub readOperationCount:   uint64;
+        pub writeOperationCount:  uint64;
+        pub otherOperationCount:  uint64;
+        pub readTransferCount:    uint64;
+        pub writeTransferCount:   uint64;
+        pub otherTransferCount:   uint64;
+    }
+
+    pub struct VmCounters {
+        pub peakVirtualSize:  uint;
+        pub virtualSize:      uint;
+        pub pageFaultCount:   uint32;
+        pub _pad1:            uint32;
+        pub peakWorkingSetSize: uint;
+        pub workingSetSize:   uint;
+        pub quotaPeakPagedPoolUsage: uint;
+        pub quotaPagedPoolUsage:     uint;
+        pub quotaPeakNonPagedPoolUsage: uint;
+        pub quotaNonPagedPoolUsage:   uint;
+        pub pagefileUsage:    uint;
+        pub peakPagefileUsage: uint;
+    }
+
+
+    // Structures — Extended
+
+
+    pub struct SysBasicInfo {
+        pub _reserved1:        uint32;
+        pub timerResolution:   uint32;
+        pub pageSize:          uint32;
+        pub numberOfPhysicalPages: uint32;
+        pub lowestPhysicalPageNumber: uint32;
+        pub highestPhysicalPageNumber: uint32;
+        pub allocationGranularity: uint32;
+        pub minimumUserModeAddress: *opaque;
+        pub maximumUserModeAddress: *opaque;
+        pub activeProcessors:  *opaque;
+        pub numberOfProcessors: uint32;
+    }
+
+    pub struct RtlProcessModuleInformation {
+        pub section:             *opaque;
+        pub mappedBase:          *opaque;
+        pub imageBase:           *opaque;
+        pub imageSize:           uint32;
+        pub flags:               uint32;
+        pub loadOrderIndex:      uint16;
+        pub initOrderIndex:      uint16;
+        pub loadCount:           uint16;
+        pub moduleNameOffset:    uint16;
+        pub fullPathName:        char8[256];
+    }
+
+
+
+    // Extern — ntdll.dll
+
+
+    @[Import(lib: "ntdll.dll")]
+    extern {
+
+        func NtQueryInformationProcess(
+            processHandle: *opaque,
+            infoClass: uint32,
+            info: *opaque,
+            infoLength: uint32,
+            retLength: *uint32
+        ) -> uint32;
+
+        func NtOpenProcess(
+            processHandle: *opaque,
+            desiredAccess: uint32,
+            objectAttr: *opaque,
+            clientId: *opaque
+        ) -> uint32;
+
+        func NtClose(handle: *opaque) -> uint32;
+
+        func NtSuspendProcess(processHandle: *opaque) -> uint32;
+
+        func NtResumeProcess(processHandle: *opaque) -> uint32;
+
+
+        func NtQuerySystemInformation(
+            infoClass: uint32,
+            info: *opaque,
+            infoLength: uint32,
+            retLength: *uint32
+        ) -> uint32;
+
+
+        func NtQueryVirtualMemory(
+            processHandle: *opaque,
+            baseAddress: *const opaque,
+            infoClass: uint32,
+            info: *opaque,
+            infoLength: uint,
+            retLength: *uint
+        ) -> uint32;
+
+
+        func RtlGetVersion(versionInfo: *opaque) -> uint32;
+
+        func RtlAllocateHeap(heap: *opaque, flags: uint32, size: uint) -> *opaque;
+
+        func RtlFreeHeap(heap: *opaque, flags: uint32, block: *opaque) -> bool32;
+
+        func RtlGetNtVersionNumbers(major: *uint32, minor: *uint32, build: *uint32);
+
+        func RtlImageNtHeader(moduleBase: *opaque) -> *opaque;
+
+        func RtlImageDirectoryEntryToData(
+            moduleBase: *opaque,
+            mappedAsImage: bool32,
+            directoryEntry: uint16,
+            size: *uint32
+        ) -> *opaque;
+    }
+
+}
