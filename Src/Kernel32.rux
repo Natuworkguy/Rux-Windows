@@ -157,6 +157,34 @@ module Windows {
         Utf8 = 65001
     }
 
+    /// Contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).
+    /// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+    struct FileTime {
+        lowDateTime: uint32;
+        highDateTime: uint32;
+    }
+
+    pub const INVALID_HANDLE_VALUE = -1;
+
+    /// Contains information about the file that is found by the FindFirstFile, FindFirstFileEx, or FindNextFile function.
+    /// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataa
+    struct Win32FindDataA {
+        fileAttributes: uint32;
+
+        creationTime: FileTime;
+        lastAccessTime: FileTime;
+        lastWriteTime: FileTime;
+
+        fileSizeHigh: uint32;
+        fileSizeLow: uint32;
+
+        reserved0: uint32;
+        reserved1: uint32;
+
+        fileName: char8[260];
+        alternateFileName: char8[14];
+    }
+
     /// Specifies a date and time, using individual members for the month, day, year, weekday, hour, minute, second, and millisecond. 
     /// The time is either in coordinated universal time (UTC) or local time, depending on the function that is being called.
     /// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
@@ -169,6 +197,53 @@ module Windows {
         minute: uint16;
         second: uint16;
         milliseconds: uint16;
+    }
+
+    /// Defines constants for read, write, or read/write access to a file.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.fileaccess?view=netframework-4.8.1
+    enum FileAccess: uint32 {
+        Read      = 0x80000000,
+        Write     = 0x40000000,
+        ReadWrite = 0xC0000000
+    }
+
+    // was really hard to find the documentation link
+    /// Contains constants for controlling the kind of access other operations can have to the same file.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.fileshare?view=net-8.0
+    enum FileShare: uint32 {
+        None   = 0,
+        Read   = 1,
+        Write  = 2,
+        Delete = 4
+    }
+
+    /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+    enum CreationDisposition: uint32 {
+        CreateNew     = 1,
+        CreateAlways  = 2,
+        OpenExisting  = 3,
+        OpenAlways    = 4,
+        TruncateExisting = 5
+    }
+
+    /// Provides attributes for files and directories.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.fileattributes?view=netframework-4.8.1
+    enum FileAttributes: uint32 {
+        ReadOnly  = 0x1,
+        Hidden    = 0x2,
+        System    = 0x4,
+        Directory = 0x10,
+        Archive   = 0x20,
+        Normal    = 0x80,
+        Temporary = 0x100
+    }
+
+    /// Specifies the position in a stream to use for seeking.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.seekorigin?view=net-8.0
+    enum SeekOrigin: uint32 {
+        Begin   = 0,
+        Current = 1,
+        End     = 2
     }
 
     // compiler bug, won't be seen in extern block
@@ -199,6 +274,12 @@ module Windows {
 
         // Retrieves a handle to the specified standard device (standard input, standard output, or standard error)
         // https://learn.microsoft.com/en-us/windows/console/getstdhandle
+        func GetStdHandle(stdHandle: StdHandle) -> *opaque; // Handle
+
+
+        // TODO: Remove because it is overload to keep compatability with the Std
+        // Retrieves a handle to the specified standard device (standard input, standard output, or standard error)
+        // https://learn.microsoft.com/en-us/windows/console/getstdhandle
         func GetStdHandle(stdHandle: uint32) -> *opaque; // Handle
 
         /// Allocates a block of memory from a heap. The allocated memory is not movable
@@ -216,12 +297,23 @@ module Windows {
         /// Maps a character string to a UTF-16 wide character string
         /// https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
         func MultiByteToWideChar(
-            codePage: uint32,
+            codePage: CodePage,
             flags: uint32,
             multiByteStr: *const char8,
             multiByte: int32,
             wideCharStr: *char16,
             wideChar: int32) -> int32;
+
+        // TODO: Remove because it is overload to keep compatability with the Std
+        /// Maps a character string to a UTF-16 wide character string
+        /// https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
+        func MultiByteToWideChar(
+            codePage: uint32,
+            flags: uint32,
+            multiByteStr: *const char8,
+            multiByte: int32,
+            wideCharStr: *char16,
+            wideChar: int32) -> int32;    
 
         /// Compares two blocks of memory and returns the number of bytes that match until the first difference
         /// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcomparememory
@@ -289,5 +381,167 @@ module Windows {
         /// Retrieves the current system date and time in Coordinated Universal Time (UTC) format.
         /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtime
         func GetSystemTime(time: *SystemTime);
+
+        /// Creates or opens a file or I/O device.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+        func CreateFileA(
+            fileName: *const char8,
+            desiredAccess: FileAccess,
+            shareMode: FileShare,
+            securityAttributes: *opaque,
+            creationDisposition: CreationDisposition,
+            flagsAndAttributes: uint32,
+            templateFile: *opaque
+        ) -> *opaque;
+
+
+        /// Closes an open object handle.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+        func CloseHandle(handle: *opaque) -> bool32;
+
+        /// Retrieves the size of the specified file.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
+        func GetFileSizeEx(
+            file: *opaque,
+            size: *int64
+        ) -> bool32;
+
+        /// Moves the file pointer of the specified file.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfilepointerex
+        func SetFilePointerEx(
+            file: *opaque,
+            distance: int64,
+            newPos: *int64,
+            moveMethod: SeekOrigin
+        ) -> bool32;
+
+        /// Writes data to the specified file or input/output (I/O) device.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile
+        func WriteFile(
+            file: *opaque,
+            buffer: *const opaque,
+            bytesToWrite: uint32,
+            bytesWritten: *uint32,
+            overlapped: *opaque
+        ) -> bool32;
+
+        /// Deletes an existing file.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
+        func DeleteFileA(
+            fileName: *const char8
+        ) -> bool32;
+
+        /// Copies an existing file to a new file.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfilea
+        func CopyFileA(
+            existingFileName: *const char8,
+            newFileName: *const char8,
+            failIfExists: bool32
+        ) -> bool32;
+
+        /// Moves an existing file or directory.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefilea
+        func MoveFileA(
+            existingFileName: *const char8,
+            newFileName: *const char8
+        ) -> bool32;
+
+        /// Creates a new directory.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectorya
+        func CreateDirectoryA(
+            pathName: *const char8,
+            securityAttributes: *opaque
+        ) -> bool32;
+
+        /// Deletes an existing empty directory.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-removedirectorya
+        func RemoveDirectoryA(
+            pathName: *const char8
+        ) -> bool32;
+
+        /// Retrieves the current directory.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectorya
+        func GetCurrentDirectoryA(
+            bufferLength: uint32,
+            buffer: *char8
+        ) -> uint32;
+
+        /// Changes the current directory.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setcurrentdirectory
+        func SetCurrentDirectoryA(
+            pathName: *const char8
+        ) -> bool32;
+
+        /// Retrieves file attributes.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
+        func GetFileAttributesA(
+            fileName: *const char8
+        ) -> uint32;
+
+        /// Sets file attributes.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfileattributesa
+        func SetFileAttributesA(
+            fileName: *const char8,
+            fileAttributes: FileAttributes
+        ) -> bool32;
+
+        /// Converts UTF-16 text to another code page.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-widechartomultibyte
+        func WideCharToMultiByte(
+            codePage: CodePage,
+            flags: uint32,
+            wideCharStr: *const char16,
+            wideChar: int32,
+            multiByteStr: *char8,
+            multiByte: int32,
+            defaultChar: *const char8,
+            usedDefaultChar: *bool32
+        ) -> int32;
+
+        /// Loads a DLL into the calling process.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya
+        func LoadLibraryA(libFileName: *const char8) -> *opaque;
+
+        /// Frees a loaded DLL module.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
+        func FreeLibrary(module_arg: *opaque) -> bool32;  // named module_arg and not module because the compiler thought it was the keyword
+
+        /// Retrieves the address of an exported symbol.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
+        func GetProcAddress(
+            module_arg: *opaque,
+            procName: *const char8
+        ) -> *opaque;
+
+        /// Reads characters from a console input buffer.
+        /// https://learn.microsoft.com/en-us/windows/console/readconsole
+        func ReadConsoleA(
+            consoleInput: *opaque,
+            buffer: *opaque,
+            numberOfCharsToRead: uint32,
+            numberOfCharsRead: *uint32,
+            inputControl: *opaque
+        ) -> bool32;
+
+
+        /// Searches a directory for a file or subdirectory with a name that matches a specific name (or partial name if wildcards are used).
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilea
+        func FindFirstFileA(
+            fileName: *const char8,
+            findFileData: *Win32FindDataA
+        ) -> *opaque;
+
+        /// Continues a file search from a previous call to the FindFirstFile, FindFirstFileEx, or FindFirstFileTransacted functions.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findnextfilea
+        func FindNextFileA(
+            findFile: *opaque,
+            findFileData: *Win32FindDataA
+        ) -> bool32;
+
+        /// Closes a file search handle opened by the FindFirstFile, FindFirstFileEx, FindFirstFileNameW, FindFirstFileNameTransactedW, FindFirstFileTransacted, FindFirstStreamTransactedW, or FindFirstStreamW functions.
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findclose
+        func FindClose(
+            findFile: *opaque
+        ) -> bool32;
     }
 }
