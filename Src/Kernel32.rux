@@ -276,6 +276,12 @@ module Windows {
         // https://learn.microsoft.com/en-us/windows/console/getstdhandle
         func GetStdHandle(stdHandle: StdHandle) -> *opaque; // Handle
 
+
+        // TODO: Remove because it is overload to keep compatability with the Std
+        // Retrieves a handle to the specified standard device (standard input, standard output, or standard error)
+        // https://learn.microsoft.com/en-us/windows/console/getstdhandle
+        func GetStdHandle(stdHandle: uint32) -> *opaque; // Handle
+
         /// Allocates a block of memory from a heap. The allocated memory is not movable
         /// https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-heapalloc
         func HeapAlloc(heap: *opaque, flags: uint32, bytes: uint) -> *opaque;
@@ -297,6 +303,17 @@ module Windows {
             multiByte: int32,
             wideCharStr: *char16,
             wideChar: int32) -> int32;
+
+        // TODO: Remove because it is overload to keep compatability with the Std
+        /// Maps a character string to a UTF-16 wide character string
+        /// https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
+        func MultiByteToWideChar(
+            codePage: uint32,
+            flags: uint32,
+            multiByteStr: *const char8,
+            multiByte: int32,
+            wideCharStr: *char16,
+            wideChar: int32) -> int32;    
 
         /// Compares two blocks of memory and returns the number of bytes that match until the first difference
         /// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcomparememory
