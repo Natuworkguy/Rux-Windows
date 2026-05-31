@@ -281,24 +281,54 @@ module Windows {
     @[Import(lib: "gdi32.dll")]
     extern {
 
+        /// Creates a device context for a device using the specified name
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createdcw
         func CreateDCW(driver: *const uint16, device: *const uint16, output: *const uint16, initData: *opaque) -> *opaque;
+        /// Creates a memory device context compatible with the specified device
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createcompatibledc
         func CreateCompatibleDC(hdc: *opaque) -> *opaque;
+        /// Deletes the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-deletedc
         func DeleteDC(hdc: *opaque) -> bool32;
+        /// Saves the current state of the specified device context by copying it to a stack
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-savedc
         func SaveDC(hdc: *opaque) -> int32;
+        /// Restores a device context to the specified state
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-restoredc
         func RestoreDC(hdc: *opaque, savedState: int32) -> bool32;
+        /// Retrieves the current brush color for the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getdcbrushcolor
         func GetDCBrushColor(hdc: *opaque) -> uint32;
+        /// Retrieves the current pen color for the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getdcpencolor
         func GetDCPenColor(hdc: *opaque) -> uint32;
 
 
+        /// Creates a bitmap compatible with the device associated with the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createcompatiblebitmap
         func CreateCompatibleBitmap(hdc: *opaque, width: int32, height: int32) -> *opaque;
+        /// Creates a bitmap with the specified width, height, and color format
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createbitmap
         func CreateBitmap(width: int32, height: int32, planes: uint32, bitCount: uint32, bits: *opaque) -> *opaque;
+        /// Deletes a logical pen, brush, font, bitmap, region, or palette
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-deleteobject
         func DeleteObject(obj: *opaque) -> bool32;
+        /// Selects an object into the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-selectobject
         func SelectObject(hdc: *opaque, obj: *opaque) -> *opaque;
+        /// Retrieves information for the specified graphics object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getobjecta
         func GetObjectA(obj: *opaque, size: int32, buffer: *opaque) -> int32;
+        /// Copies the bitmap bits of a bitmap into a buffer
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getbitmapbits
         func GetBitmapBits(hBitmap: *opaque, count: int32, bits: *opaque) -> int32;
+        /// Sets the bits of color data for a bitmap to the specified values
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setbitmapbits
         func SetBitmapBits(hBitmap: *opaque, count: uint32, bits: *const opaque) -> int32;
 
 
+        /// Creates a DIB that applications can write to directly
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createdibsection
         func CreateDIBSection(
             hdc: *opaque,
             bmi: *opaque,
@@ -308,6 +338,8 @@ module Windows {
             offset: uint32
         ) -> *opaque;
 
+        /// Retrieves the bits of a bitmap and copies them into a buffer using the specified format
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getdibits
         func GetDIBits(
             hdc: *opaque,
             hBitmap: *opaque,
@@ -318,6 +350,8 @@ module Windows {
             colorUse: uint32
         ) -> int32;
 
+        /// Sets the pixels in a bitmap using color data from a DIB
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setdibits
         func SetDIBits(
             hdc: *opaque,
             hBitmap: *opaque,
@@ -328,6 +362,8 @@ module Windows {
             colorUse: uint32
         ) -> int32;
 
+        /// Sets the pixels in the specified rectangle on the device to the color data found in the specified DIB
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setdibitstodevice
         func SetDIBitsToDevice(
             hdc: *opaque,
             xDest: int32, yDest: int32,
@@ -340,6 +376,8 @@ module Windows {
             colorUse: uint32
         ) -> int32;
 
+        /// Copies the color data for a rectangle of pixels in a DIB to the specified destination rectangle
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-stretchdibits
         func StretchDIBits(
             hdc: *opaque,
             xDest: int32, yDest: int32, wDest: int32, hDest: int32,
@@ -351,6 +389,8 @@ module Windows {
         ) -> int32;
 
 
+        /// Performs a bit-block transfer of color data from a source device context into a destination device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-bitblt
         func BitBlt(
             hdcDest: *opaque,
             x: int32, y: int32, w: int32, h: int32,
@@ -359,6 +399,8 @@ module Windows {
             rop: uint32
         ) -> bool32;
 
+        /// Copies a bitmap from a source rectangle into a destination rectangle, stretching or compressing the bitmap to fit the dimensions of the destination
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-stretchblt
         func StretchBlt(
             hdcDest: *opaque,
             xDest: int32, yDest: int32, wDest: int32, hDest: int32,
@@ -367,20 +409,40 @@ module Windows {
             rop: uint32
         ) -> bool32;
 
+        /// Paints the specified rectangle using the brush that is currently selected into the device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-patblt
         func PatBlt(hdc: *opaque, x: int32, y: int32, w: int32, h: int32, rop: uint32) -> bool32;
 
+        /// Creates a logical pen that has the specified style, width, and color
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createpen
         func CreatePen(style: int32, width: int32, color: uint32) -> *opaque;
+        /// Creates a logical brush that has the specified solid color
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createsolidbrush
         func CreateSolidBrush(color: uint32) -> *opaque;
+        /// Retrieves a handle to one of the stock pens, brushes, fonts, or palettes
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getstockobject
         func GetStockObject(index: int32) -> *opaque;
 
 
+        /// Writes a character string at the specified location using the currently selected font
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-textouta
         func TextOutA(hdc: *opaque, x: int32, y: int32, text: *const char8, count: int32) -> bool32;
+        /// Computes the width and height of the specified string of text
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-gettextextentpoint32a
         func GetTextExtentPoint32A(hdc: *opaque, text: *const char8, count: int32, size: *opaque) -> bool32;
+        /// Sets the text color for the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-settextcolor
         func SetTextColor(hdc: *opaque, color: uint32) -> uint32;
+        /// Sets the current background color to the specified color value
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setbkcolor
         func SetBkColor(hdc: *opaque, color: uint32) -> uint32;
+        /// Sets the background mix mode of the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setbkmode
         func SetBkMode(hdc: *opaque, mode: int32) -> int32;
 
 
+        /// Creates a logical font with specified characteristics
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createfonta
         func CreateFontA(
             height: int32, width: int32,
             escapement: int32, orientation: int32,
@@ -393,18 +455,36 @@ module Windows {
         ) -> *opaque;
 
 
+        /// Creates a rectangular region
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createrectrgn
         func CreateRectRgn(left: int32, top: int32, right: int32, bottom: int32) -> *opaque;
+        /// Creates a rectangular region with rounded corners
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createroundrectrgn
         func CreateRoundRectRgn(left: int32, top: int32, right: int32, bottom: int32, wEllipse: int32, hEllipse: int32) -> *opaque;
+        /// Combines two regions and stores the result in a third region
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-combinergn
         func CombineRgn(dest: *opaque, src1: *opaque, src2: *opaque, combineMode: int32) -> int32;
+        /// Determines whether any part of a rectangle is within the boundaries of a region
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-rectinregion
         func RectInRegion(region: *opaque, rect: *opaque) -> bool32;
+        /// Moves a region by the specified offsets
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-offsetrgn
         func OffsetRgn(region: *opaque, x: int32, y: int32) -> int32;
+        /// Retrieves the bounding rectangle of the specified region
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getrgnbox
         func GetRgnBox(region: *opaque, rect: *opaque) -> int32;
 
 
+        /// Selects a region as the current clipping region for the specified device context
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-selectcliprgn
         func SelectClipRgn(hdc: *opaque, region: *opaque) -> int32;
+        /// Combines the specified region with the current clipping region using the specified mode
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-extselectcliprgn
         func ExtSelectClipRgn(hdc: *opaque, region: *opaque, mode: int32) -> int32;
 
 
+        /// Retrieves the color nearest to the specified color that the device can actually render
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-getnearestcolor
         func GetNearestColor(hdc: *opaque, color: uint32) -> uint32;
     }
 }

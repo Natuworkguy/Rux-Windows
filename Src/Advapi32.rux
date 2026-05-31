@@ -234,6 +234,8 @@ module Windows {
     @[Import(lib: "advapi32.dll")]
     extern {
 
+        /// Opens the specified registry key with the desired access
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regopenkeyexa
         func RegOpenKeyExA(
             hKey: *opaque,
             subKey: *const char8,
@@ -242,6 +244,8 @@ module Windows {
             result: *opaque
         ) -> uint32;
 
+        /// Creates the specified registry key or opens it if it already exists
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regcreatekeyexa
         func RegCreateKeyExA(
             hKey: *opaque,
             subKey: *const char8,
@@ -254,10 +258,18 @@ module Windows {
             disposition: *uint32
         ) -> uint32;
 
+        /// Closes a handle to the specified registry key
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regclosekey
         func RegCloseKey(hKey: *opaque) -> uint32;
+        /// Deletes a subkey and its values from the specified platform-specific registry view
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regdeletekeyexa
         func RegDeleteKeyExA(hKey: *opaque, subKey: *const char8, accessMask: uint32, reserved: uint32) -> uint32;
+        /// Removes a named value from the specified registry key
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regdeletevaluea
         func RegDeleteValueA(hKey: *opaque, valueName: *const char8) -> uint32;
 
+        /// Retrieves the type and data for the specified value name associated with an open registry key
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regqueryvalueexa
         func RegQueryValueExA(
             hKey: *opaque,
             valueName: *const char8,
@@ -267,6 +279,8 @@ module Windows {
             dataSize: *uint32
         ) -> uint32;
 
+        /// Sets the data and type of a value under a registry key
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regsetvalueexa
         func RegSetValueExA(
             hKey: *opaque,
             valueName: *const char8,
@@ -276,6 +290,8 @@ module Windows {
             dataSize: uint32
         ) -> uint32;
 
+        /// Enumerates the subkeys of the specified open registry key
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumkeyexa
         func RegEnumKeyExA(
             hKey: *opaque,
             index: uint32,
@@ -287,6 +303,8 @@ module Windows {
             lastWriteTime: *uint64
         ) -> uint32;
 
+        /// Enumerates the values for the specified open registry key
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumvaluea
         func RegEnumValueA(
             hKey: *opaque,
             index: uint32,
@@ -298,17 +316,25 @@ module Windows {
             dataSize: *uint32
         ) -> uint32;
 
+        /// Writes all attributes of the specified open registry key to the registry
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regflushkey
         func RegFlushKey(hKey: *opaque) -> uint32;
 
 
+        /// Establishes a connection to the service control manager
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-openscmanagera
         func OpenSCManagerA(
             machineName: *const char8,
             databaseName: *const char8,
             desiredAccess: uint32
         ) -> *opaque;
 
+        /// Closes a handle to a service control manager object or a service object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-closeservicehandle
         func CloseServiceHandle(hSCObject: *opaque) -> bool32;
 
+        /// Creates a service object and adds it to the service control manager database
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-createservicea
         func CreateServiceA(
             hSCManager: *opaque,
             serviceName: *const char8,
@@ -325,17 +351,29 @@ module Windows {
             password: *const char8
         ) -> *opaque;
 
+        /// Opens an existing service
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-openservicea
         func OpenServiceA(
             hSCManager: *opaque,
             serviceName: *const char8,
             desiredAccess: uint32
         ) -> *opaque;
 
+        /// Marks the specified service for deletion from the service control manager database
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-deleteservice
         func DeleteService(hService: *opaque) -> bool32;
+        /// Starts a service
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-startservicea
         func StartServiceA(hService: *opaque, argc: uint32, argv: *opaque) -> bool32;
+        /// Sends a control code to a service
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-controlservice
         func ControlService(hService: *opaque, control: uint32, status: *opaque) -> bool32;
+        /// Retrieves the current status of the specified service
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-queryservicestatus
         func QueryServiceStatus(hService: *opaque, status: *opaque) -> bool32;
 
+        /// Retrieves the configuration parameters of the specified service
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-queryserviceconfiga
         func QueryServiceConfigA(
             hService: *opaque,
             config: *opaque,
@@ -343,6 +381,8 @@ module Windows {
             bytesNeeded: *uint32
         ) -> bool32;
 
+        /// Changes the configuration parameters of a service
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-changeserviceconfiga
         func ChangeServiceConfigA(
             hService: *opaque,
             serviceType: uint32,
@@ -357,6 +397,8 @@ module Windows {
             displayName: *const char8
         ) -> bool32;
 
+        /// Enumerates services in the specified service control manager database
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-enumservicesstatusa
         func EnumServicesStatusA(
             hSCManager: *opaque,
             serviceType: uint32,
@@ -369,12 +411,16 @@ module Windows {
         ) -> bool32;
 
 
+        /// Opens the access token associated with a process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocesstoken
         func OpenProcessToken(
             processHandle: *opaque,
             desiredAccess: uint32,
             tokenHandle: *opaque
         ) -> bool32;
 
+        /// Opens the access token associated with a thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthreadtoken
         func OpenThreadToken(
             threadHandle: *opaque,
             desiredAccess: uint32,
@@ -382,6 +428,8 @@ module Windows {
             tokenHandle: *opaque
         ) -> bool32;
 
+        /// Retrieves a specified type of information about an access token
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-gettokeninformation
         func GetTokenInformation(
             tokenHandle: *opaque,
             infoClass: uint32,
@@ -390,12 +438,16 @@ module Windows {
             retLength: *uint32
         ) -> bool32;
 
+        /// Retrieves the locally unique identifier used on a specified system to locally represent a named privilege
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lookupprivilegevaluea
         func LookupPrivilegeValueA(
             systemName: *const char8,
             privilegeName: *const char8,
             luid: *Luid
         ) -> bool32;
 
+        /// Enables or disables privileges in the specified access token
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-adjusttokenprivileges
         func AdjustTokenPrivileges(
             tokenHandle: *opaque,
             disableAll: bool32,
@@ -405,12 +457,22 @@ module Windows {
             retLength: *uint32
         ) -> bool32;
 
+        /// Lets the calling thread impersonate the security context of a logged-on user
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-impersonateloggedonuser
         func ImpersonateLoggedOnUser(hToken: *opaque) -> bool32;
+        /// Terminates the impersonation of a client application
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-reverttoself
         func RevertToSelf() -> bool32;
 
 
+        /// Initializes a new security descriptor
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-initializesecuritydescriptor
         func InitializeSecurityDescriptor(sd: *opaque, revision: uint32) -> bool32;
+        /// Determines whether the components of a security descriptor are valid
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-isvalidsecuritydescriptor
         func IsValidSecurityDescriptor(sd: *opaque) -> bool32;
+        /// Sets information in a discretionary access control list
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-setsecuritydescriptordacl
         func SetSecurityDescriptorDacl(
             sd: *opaque,
             daclPresent: bool32,
@@ -418,6 +480,8 @@ module Windows {
             daclDefaulted: bool32
         ) -> bool32;
 
+        /// Retrieves a pointer to the discretionary access control list in a security descriptor
+        /// https://learn.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-getsecuritydescriptordacl
         func GetSecurityDescriptorDacl(
             sd: *opaque,
             daclPresent: *bool32,
@@ -426,6 +490,8 @@ module Windows {
         ) -> bool32;
 
 
+        /// Accepts the name of a system and an account as input and retrieves a security identifier for the account
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lookupaccountnamea
         func LookupAccountNameA(
             systemName: *const char8,
             accountName: *const char8,
@@ -436,6 +502,8 @@ module Windows {
             sidUse: *uint32
         ) -> bool32;
 
+        /// Accepts a security identifier and retrieves the name of the account and the name of the first domain on which that account was found
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lookupaccountsida
         func LookupAccountSidA(
             systemName: *const char8,
             sid: *opaque,
@@ -487,6 +555,8 @@ module Windows {
     // Wrappers — safe **opaque pattern (output handles via return value)
 
 
+    /// Opens the access token for a process with configurable access rights
+    /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocesstoken
     pub func OpenProcessTokenEx(hProcess: *opaque, access: uint32) -> *opaque {
         var token: *opaque = null;
         let ok = OpenProcessToken(hProcess, access, &token as *opaque);
@@ -494,6 +564,8 @@ module Windows {
         return null;
     }
 
+    /// Opens the access token for a thread with configurable access rights and self-impersonation control
+    /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthreadtoken
     pub func OpenThreadTokenEx(hThread: *opaque, access: uint32, asSelf: bool32) -> *opaque {
         var token: *opaque = null;
         let ok = OpenThreadToken(hThread, access, asSelf, &token as *opaque);
@@ -501,6 +573,8 @@ module Windows {
         return null;
     }
 
+    /// Opens the specified registry key
+    /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regopenkeyexa
     pub func RegOpenKeyA(hKey: uint, subKey: *const char8, access: uint32) -> *opaque {
         var result: *opaque = null;
         let ret = RegOpenKeyExA(hKey as *opaque, subKey, 0u32, access, &result as *opaque);
@@ -508,6 +582,8 @@ module Windows {
         return null;
     }
 
+    /// Creates or opens a registry key and returns its handle
+    /// https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regcreatekeyexa
     pub func CreateKeyA(
         hKey: uint,
         subKey: *const char8,

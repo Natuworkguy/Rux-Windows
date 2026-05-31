@@ -165,28 +165,52 @@ module Windows {
 
     @[Import(lib: "ws2_32.dll")]
     extern {
+        /// Initiates use of the Winsock DLL by a process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup
         func WSAStartup(wVersionRequested: uint16, wsaData: *opaque) -> int32;
 
+        /// Terminates use of the Winsock 2 DLL
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsacleanup
         func WSACleanup() -> int32;
 
+        /// Returns the error status for the last Windows Sockets operation that failed
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsagetlasterror
         func WSAGetLastError() -> int32;
 
+        /// Creates a socket that is bound to a specific transport service provider
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-socket
         func socket(af: int32, sockType: int32, protocol: int32) -> *opaque;
 
+        /// Closes an existing socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-closesocket
         func closesocket(sock: *opaque) -> int32;
 
+        /// Associates a local address with a socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-bind
         func bind(sock: *opaque, addr: *opaque, addrLen: int32) -> int32;
 
+        /// Places a socket in a state in which it is listening for an incoming connection
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-listen
         func listen(sock: *opaque, backlog: int32) -> int32;
 
+        /// Permits an incoming connection attempt on a socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-accept
         func accept(sock: *opaque, addr: *opaque, addrLen: *int32) -> *opaque;
 
+        /// Establishes a connection to a specified socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-connect
         func connect(sock: *opaque, addr: *opaque, addrLen: int32) -> int32;
 
+        /// Sends data on a connected socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-send
         func send(sock: *opaque, buf: *const uint8, len: int32, flags: int32) -> int32;
 
+        /// Receives data from a connected socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-recv
         func recv(sock: *opaque, buf: *uint8, len: int32, flags: int32) -> int32;
 
+        /// Sends data to a specific destination
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-sendto
         func sendto(
             sock: *opaque,
             buf: *const uint8,
@@ -196,6 +220,8 @@ module Windows {
             toLen: int32
         ) -> int32;
 
+        /// Receives a datagram and stores the source address
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-recvfrom
         func recvfrom(
             sock: *opaque,
             buf: *uint8,
@@ -205,6 +231,8 @@ module Windows {
             fromLen: *int32
         ) -> int32;
 
+        /// Sets a socket option
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-setsockopt
         func setsockopt(
             sock: *opaque,
             level: int32,
@@ -213,6 +241,8 @@ module Windows {
             optLen: int32
         ) -> int32;
 
+        /// Retrieves a socket option
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getsockopt
         func getsockopt(
             sock: *opaque,
             level: int32,
@@ -221,34 +251,64 @@ module Windows {
             optLen: *int32
         ) -> int32;
 
+        /// Disables sends or receives on a socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-shutdown
         func shutdown(sock: *opaque, how: int32) -> int32;
 
+        /// Retrieves the local name for a socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getsockname
         func getsockname(sock: *opaque, addr: *opaque, addrLen: *int32) -> int32;
 
+        /// Retrieves the address of the peer to which a socket is connected
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getpeername
         func getpeername(sock: *opaque, addr: *opaque, addrLen: *int32) -> int32;
 
+        /// Controls the I/O mode of a socket
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-ioctlsocket
         func ioctlsocket(sock: *opaque, cmd: uint32, arg: *uint32) -> int32;
 
+        /// Converts a string containing an IPv4 dotted-decimal address into a proper address for the IN_ADDR structure
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-inet_addr
         func inet_addr(cp: *const char8) -> uint32;
 
+        /// Converts an IPv4 Internet network address into an ASCII string in Internet standard dotted-decimal format
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-inet_ntoa
         func inet_ntoa(inAddr: uint32) -> *char8;
 
+        /// Retrieves host information corresponding to a host name from a host database
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-gethostbyname
         func gethostbyname(name: *const char8) -> *opaque;
 
+        /// Retrieves the standard host name for the local computer
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-gethostname
         func gethostname(name: *char8, nameLen: int32) -> int32;
 
+        /// Retrieves the protocol information corresponding to a protocol name
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getprotobyname
         func getprotobyname(name: *const char8) -> *opaque;
 
+        /// Retrieves service information corresponding to a service name and protocol
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getservbyname
         func getservbyname(name: *const char8, proto: *const char8) -> *opaque;
 
+        /// Converts a u_short from TCP/IP network byte order to host byte order
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-ntohs
         func ntohs(netshort: uint16) -> uint16;
 
+        /// Converts a u_short from host byte order to TCP/IP network byte order
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-htons
         func htons(hostshort: uint16) -> uint16;
 
+        /// Converts a u_long from TCP/IP network byte order to host byte order
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-ntohl
         func ntohl(netlong: uint32) -> uint32;
 
+        /// Converts a u_long from host byte order to TCP/IP network byte order
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-htonl
         func htonl(hostlong: uint32) -> uint32;
 
+        /// Provides protocol-independent translation from an ANSI host name to an address
+        /// https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfo
         func getaddrinfo(
             nodeName: *const char8,
             serviceName: *const char8,
@@ -256,8 +316,12 @@ module Windows {
             result: *opaque
         ) -> int32;
 
+        /// Frees address information that the getaddrinfo function dynamically allocates
+        /// https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-freeaddrinfo
         func freeaddrinfo(addrInfo: *opaque);
 
+        /// Converts all components of a sockaddr structure into a human-readable string representation
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsaaddresstostringa
         func WSAAddressToStringA(
             sockaddr: *opaque,
             addrLen: uint32,
@@ -266,6 +330,8 @@ module Windows {
             strLen: *uint32
         ) -> int32;
 
+        /// Converts a human-readable string to a socket address structure
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsastringtoaddress
         func WSAStringToAddressA(
             addrStr: *char8,
             af: int32,

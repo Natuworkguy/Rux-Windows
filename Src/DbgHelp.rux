@@ -165,6 +165,8 @@ module Windows {
     @[Import(lib: "dbghelp.dll")]
     extern {
 
+        /// Writes user-mode minidump information to a file
+        /// https://learn.microsoft.com/en-us/windows/win32/api/minidumpapiset/nf-minidumpapiset-minidumpwritedump
         func MiniDumpWriteDump(
             hProcess: *opaque,
             processId: uint32,
@@ -176,16 +178,26 @@ module Windows {
         ) -> bool32;
 
 
+        /// Initializes the symbol handler for a process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-syminitialize
         func SymInitialize(
             hProcess: *opaque,
             userSearchPath: *const char8,
             invadeProcess: bool32
         ) -> bool32;
 
+        /// Deallocates all resources associated with the process handle
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symcleanup
         func SymCleanup(hProcess: *opaque) -> bool32;
+        /// Sets the options mask for the symbol handler
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symsetoptions
         func SymSetOptions(options: uint32) -> uint32;
+        /// Retrieves the options mask for the symbol handler
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symgetoptions
         func SymGetOptions() -> uint32;
 
+        /// Loads a module's symbol table
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symloadmoduleex
         func SymLoadModuleEx(
             hProcess: *opaque,
             hFile: *opaque,
@@ -197,8 +209,12 @@ module Windows {
             flags: uint32
         ) -> uint64;
 
+        /// Unloads a module's symbol table
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symunloadmodule64
         func SymUnloadModule64(hProcess: *opaque, baseOfDll: uint64) -> bool32;
 
+        /// Retrieves symbol information for the specified address
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symfromaddr
         func SymFromAddr(
             hProcess: *opaque,
             address: uint64,
@@ -206,6 +222,8 @@ module Windows {
             symbol: *opaque
         ) -> bool32;
 
+        /// Retrieves the source file and line number for the specified address
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symgetlinefromaddr64
         func SymGetLineFromAddr64(
             hProcess: *opaque,
             address: uint64,
@@ -213,6 +231,8 @@ module Windows {
             line: *opaque
         ) -> bool32;
 
+        /// Enumerates all symbols in a process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symenumsymbols
         func SymEnumSymbols(
             hProcess: *opaque,
             baseOfDll: uint64,
@@ -222,6 +242,8 @@ module Windows {
         ) -> bool32;
 
 
+        /// Obtains a stack trace for a thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-stackwalk64
         func StackWalk64(
             machineType: uint32,
             hProcess: *opaque,
@@ -235,7 +257,11 @@ module Windows {
         ) -> bool32;
 
 
+        /// Returns a pointer to the PE header of an image
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-imagentheader
         func ImageNtHeader(base: *opaque) -> *opaque;
+        /// Locates a directory entry within the image header and returns the address of the data for that directory entry
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-imagedirectoryentrytodataex
         func ImageDirectoryEntryToDataEx(
             base: *opaque,
             mappedAsImage: bool32,
@@ -244,6 +270,8 @@ module Windows {
             foundHeader: *opaque
         ) -> *opaque;
 
+        /// Locates a relative virtual address within the image header of a file and returns the virtual address of the corresponding byte in the file
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-imagervatova
         func ImageRvaToVa(
             ntHeaders: *opaque,
             base: *opaque,
@@ -252,7 +280,11 @@ module Windows {
         ) -> *opaque;
 
 
+        /// Retrieves the function table entry for the specified address
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symfunctiontableaccess64
         func SymFunctionTableAccess64(hProcess: *opaque, address: uint64) -> *opaque;
+        /// Retrieves the base address of the module that contains the specified address
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-symgetmodulebase64
         func SymGetModuleBase64(hProcess: *opaque, address: uint64) -> uint64;
 
     }

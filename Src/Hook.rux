@@ -24,6 +24,8 @@ struct HookRegistryEntry {
 var g_hookRegistry: HookRegistryEntry[256];
 var g_registryLock: int32 = 0;
 
+/// Spin-loop acquire of the global hook registry lock
+/// https://github.com/rux-lang/Windows
 func AcquireRegistryLock() {
     loop {
         let old = InterlockedCompareExchange(&g_registryLock, 1, 0);
@@ -33,6 +35,8 @@ func AcquireRegistryLock() {
     }
 }
 
+/// Releases the global hook registry lock
+/// https://github.com/rux-lang/Windows
 func ReleaseRegistryLock() {
     InterlockedExchange(&g_registryLock, 0);
 }
@@ -53,6 +57,8 @@ pub struct InlineHookRecord {
 }
 
 // Fixed: Write JMP with proper instruction boundary alignment
+/// Writes a 14-byte absolute indirect JMP stub into the target address
+/// https://github.com/rux-lang/Windows
 func WriteAbsJmp(where_: *opaque, destination: *const opaque) {
     let p = where_ as *uint8;
     *p                             = 0xFFu8;
@@ -67,6 +73,8 @@ func WriteAbsJmp(where_: *opaque, destination: *const opaque) {
 
 // NEW: Basic RIP-relocation fixup for trampoline
 // This handles common RIP-relative instructions
+/// Rewrites a RIP-relative LEA instruction in the trampoline to use the correct absolute delta
+/// https://github.com/rux-lang/Windows
 func FixupRipRelativeInstruction(trampolineBase: *opaque, originalBase: *const opaque, offset: uint, stolenLen: uint) {
     let trampAddr = trampolineBase as uint;
     let origAddr = originalBase as uint;
@@ -90,6 +98,8 @@ func FixupRipRelativeInstruction(trampolineBase: *opaque, originalBase: *const o
 }
 
 // Fixed: Dynamic prologue length detection (simplified)
+/// Disassembles bytes at addr to find a safe prologue boundary >= 14 bytes for hooking
+/// https://github.com/rux-lang/Windows
 func GetPrologueLength(addr: *const opaque, maxBytes: uint) -> uint {
     var pos: uint = 0u;
     var p = addr as *uint8;
@@ -128,6 +138,8 @@ func GetPrologueLength(addr: *const opaque, maxBytes: uint) -> uint {
 }
 
 // Fixed: Thread-safe inline hook with conflict detection
+/// Installs a 64-bit inline hook with a W^X trampoline and atomic JMP patch
+/// https://github.com/rux-lang/Windows
 pub func InlineHook(
     targetFunc: *opaque,
     hookFunc:   *const opaque,
@@ -247,6 +259,8 @@ pub func InlineHook(
 }
 
 // Fixed: Thread-safe unhook with reference counting
+/// Removes an inline hook, restores the original prologue bytes, and frees the trampoline
+/// https://github.com/rux-lang/Windows
 pub func InlineUnhook(record: *InlineHookRecord) -> int32 {
     if !(*record).active { return HOOK_ERR_NOT_HOOKED; }
     
@@ -319,6 +333,8 @@ pub struct IatHookRecord {
     pub originalProtect:  uint32;
 }
 
+/// Patches the Import Address Table entry for a function using an atomic pointer exchange
+/// https://github.com/rux-lang/Windows
 pub func IatHook(
     targetModule:  *opaque,
     importedDll:   *const char8,
@@ -403,6 +419,8 @@ pub func IatHook(
     return HOOK_ERR_FUNC_NOT_FOUND;
 }
 
+/// Restores an IAT entry to its original value using an atomic pointer exchange
+/// https://github.com/rux-lang/Windows
 pub func IatUnhook(record: *IatHookRecord) -> int32 {
     if (*record).iatSlot == null { return HOOK_ERR_NOT_HOOKED; }
 
@@ -428,12 +446,20 @@ pub func IatUnhook(record: *IatHookRecord) -> int32 {
 
 // Helper atomic operations (assume kernel32 provides these)
 extern {
+    /// Atomically exchanges a pair of pointer values
+    /// https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedexchangepointer
     func InterlockedExchangePointer(target: *opaque, value: *opaque) -> *opaque;
+    /// Performs an atomic compare-and-exchange on a 32-bit value
+    /// https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedcompareexchange
     func InterlockedCompareExchange(target: *int32, exchange: int32, comparand: int32) -> int32;
+    /// Atomically sets a 32-bit variable to the specified value
+    /// https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedexchange
     func InterlockedExchange(target: *int32, value: int32) -> int32;
 }
 
 // Rest of file remains the same
+/// Patches an exported function pointer in a loaded module's EAT
+/// https://github.com/rux-lang/Windows
 pub func HookExport(
     dllName:      *const char8,
     functionName: *const char8,
@@ -454,6 +480,8 @@ pub func HookExport(
     return InlineHook(target as *opaque, hookFunc, record);
 }
 
+/// Case-insensitive ASCII string comparison; returns true if both strings are equal
+/// https://github.com/rux-lang/Windows
 func StrIEqual(a: *const char8, b: *const char8) -> bool {
     var ia = a;
     var ib = b;

@@ -279,18 +279,28 @@ module Windows {
 
     @[Import(lib: "WinHvPlatform.dll")]
     extern {
+        /// Queries the capabilities of the hypervisor partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetcapability
         func WHvGetCapability(
             capabilityCode: uint32,
             capabilityBuffer: *opaque,
             capabilityBufferSize: uint32
         ) -> uint32;
 
+        /// Creates a new partition object
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcreatepartition
         func WHvCreatePartition(partition: *opaque) -> uint32;
 
+        /// Deletes a partition object
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvdeletepartition
         func WHvDeletePartition(partition: *opaque) -> uint32;
 
+        /// Completes the creation of a partition and makes it ready for use
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvsetuppartition
         func WHvSetupPartition(partition: *opaque) -> uint32;
 
+        /// Maps a range of a partition's guest physical address space to a specified host virtual address space range
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvmapgparange
         func WHvMapGpaRange(
             partition: *opaque,
             sourceAddress: *opaque,
@@ -299,23 +309,31 @@ module Windows {
             flags: uint32
         ) -> uint32;
 
+        /// Unmaps a previously mapped GPA range from the partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvunmapgparange
         func WHvUnmapGpaRange(
             partition: *opaque,
             gpa: uint64,
             byteCount: uint64
         ) -> uint32;
 
+        /// Creates a virtual processor in a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcreatevirtualprocessor
         func WHvCreateVirtualProcessor(
             partition: *opaque,
             vpIndex: uint32,
             flags: uint32
         ) -> uint32;
 
+        /// Deletes a virtual processor in a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvdeletevirtualprocessor
         func WHvDeleteVirtualProcessor(
             partition: *opaque,
             vpIndex: uint32
         ) -> uint32;
 
+        /// Runs the virtual processor and returns when the processor exits
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvrunvirtualprocessor
         func WHvRunVirtualProcessor(
             partition: *opaque,
             vpIndex: uint32,
@@ -323,11 +341,15 @@ module Windows {
             exitContextSize: uint32
         ) -> uint32;
 
+        /// Requests the cancellation of a currently executing virtual processor run
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcancelrunvirtualprocessor
         func WHvCancelRunVirtualProcessor(
             partition: *opaque,
             vpIndex: uint32
         ) -> uint32;
 
+        /// Retrieves the value of a list of registers from a virtual processor
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetvirtualprocessorregisters
         func WHvGetVirtualProcessorRegisters(
             partition: *opaque,
             vpIndex: uint32,
@@ -336,6 +358,8 @@ module Windows {
             registerCount: uint32
         ) -> uint32;
 
+        /// Sets the value of a list of registers in a virtual processor
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvsetvirtualprocessorregisters
         func WHvSetVirtualProcessorRegisters(
             partition: *opaque,
             vpIndex: uint32,
@@ -344,6 +368,8 @@ module Windows {
             registerCount: uint32
         ) -> uint32;
 
+        /// Retrieves a property of a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetpartitionproperty
         func WHvGetPartitionProperty(
             partition: *opaque,
             propertyCode: uint32,
@@ -352,6 +378,8 @@ module Windows {
             resultSize: *uint32
         ) -> uint32;
 
+        /// Sets a property of a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvsetpartitionproperty
         func WHvSetPartitionProperty(
             partition: *opaque,
             propertyCode: uint32,
@@ -359,12 +387,16 @@ module Windows {
             propertyBufferSize: uint32
         ) -> uint32;
 
+        /// Requests an interrupt to be injected into a virtual processor
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvrequestinterrupt
         func WHvRequestInterrupt(
             partition: *opaque,
             interruptControl: *opaque,
             controlSize: uint32
         ) -> uint32;
 
+        /// Translates a guest virtual address to a guest physical address
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvtranslategva
         func WHvTranslateGva(
             partition: *opaque,
             vpIndex: uint32,
@@ -379,6 +411,8 @@ module Windows {
     // Convenience helpers
 
 
+    /// Returns true if the Windows Hypervisor Platform API is available on this system
+    /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetcapability
     pub func IsWhpAvailable() -> bool {
         var present: uint32 = 0u32;
         let ret = WHvGetCapability(
@@ -390,6 +424,8 @@ module Windows {
         return present != 0u32;
     }
 
+    /// Creates and sets up a new hypervisor partition ready for virtual processor creation
+    /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcreatepartition
     pub func CreatePartition() -> *opaque {
         var partition: *opaque = null;
         let _ = WHvCreatePartition(&partition as *opaque);

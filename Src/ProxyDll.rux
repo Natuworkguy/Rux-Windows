@@ -13,6 +13,8 @@ pub struct ProxyModule {
 }
 
 // Fixed: Get correct system directory based on target architecture
+/// Builds the full system-directory path for the given DLL name
+/// https://github.com/rux-lang/Windows
 pub func GetSystemPathForDll(outBuffer: *char8, bufSize: uint32, dllName: *const char8, targetIsWow64: bool32) -> bool32 {
     var written: uint32 = 0u32;
     
@@ -52,6 +54,8 @@ pub func GetSystemPathForDll(outBuffer: *char8, bufSize: uint32, dllName: *const
 }
 
 // Fixed: Load with explicit search flags to avoid redirection issues
+/// Loads the system DLL from System32 and stores its handle in the proxy module struct
+/// https://github.com/rux-lang/Windows
 pub func ProxyModuleLoad(proxy: *ProxyModule, dllName: *const char8, pathBuf: *char8, bufSize: uint32) -> bool32 {
     // Use LOAD_LIBRARY_SEARCH_SYSTEM32 flag to ensure correct architecture
     if !GetSystemPathForDll(pathBuf, bufSize, dllName, (*proxy).isWow64) { 
@@ -74,11 +78,15 @@ pub func ProxyModuleLoad(proxy: *ProxyModule, dllName: *const char8, pathBuf: *c
 }
 
 // Rest remains the same
+/// Retrieves an exported function pointer from a loaded proxy module
+/// https://github.com/rux-lang/Windows
 pub func ProxyModuleGetExport(proxy: *ProxyModule, exportName: *const char8) -> *const opaque {
     if (*proxy).hRealDll == null { return null; }
     return GetProcAddress((*proxy).hRealDll, exportName);
 }
 
+/// Unloads the proxy module and clears its handle
+/// https://github.com/rux-lang/Windows
 pub func ProxyModuleUnload(proxy: *ProxyModule) {
     if (*proxy).hRealDll != null {
         FreeLibrary((*proxy).hRealDll);
@@ -91,6 +99,8 @@ pub struct ForwardEntry {
     pub fn_:  *const opaque;
 }
 
+/// Walks a forward-entry table and resolves each export pointer from the proxy module
+/// https://github.com/rux-lang/Windows
 pub func ForwardTableResolve(table: *ForwardEntry, count: uint32, proxy: *ProxyModule) {
     var i: uint32 = 0u32;
     loop {

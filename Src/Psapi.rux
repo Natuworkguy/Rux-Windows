@@ -60,12 +60,16 @@ module Windows {
 
     @[Import(lib: "psapi.dll")]
     extern {
+        /// Retrieves the process identifier for each process object in the system
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocesses
         func EnumProcesses(
             processIds: *uint32,
             cb: uint32,
             bytesReturned: *uint32
         ) -> bool32;
 
+        /// Retrieves the base name of the specified module
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getmodulebasenamea
         func GetModuleBaseNameA(
             hProcess: *opaque,
             hModule: *opaque,
@@ -73,6 +77,8 @@ module Windows {
             size: uint32
         ) -> uint32;
 
+        /// Retrieves the fully qualified path for the file containing the specified module
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getmodulefilenameexa
         func GetModuleFileNameExA(
             hProcess: *opaque,
             hModule: *opaque,
@@ -80,12 +86,16 @@ module Windows {
             nSize: uint32
         ) -> uint32;
 
+        /// Retrieves information about the memory usage of the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessmemoryinfo
         func GetProcessMemoryInfo(
             hProcess: *opaque,
             counters: *opaque,
             cb: uint32
         ) -> bool32;
 
+        /// Retrieves a handle for each module in the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocessmodules
         func EnumProcessModules(
             hProcess: *opaque,
             modules: *opaque,
@@ -93,6 +103,8 @@ module Windows {
             bytesNeeded: *uint32
         ) -> bool32;
 
+        /// Retrieves a handle for each module in the specified process, with architecture filtering
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocessmodulesex
         func EnumProcessModulesEx(
             hProcess: *opaque,
             modules: *opaque,
@@ -101,6 +113,8 @@ module Windows {
             filterFlag: uint32
         ) -> bool32;
 
+        /// Retrieves information about the specified module in the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getmoduleinformation
         func GetModuleInformation(
             hProcess: *opaque,
             hModule: *opaque,
@@ -108,23 +122,31 @@ module Windows {
             cb: uint32
         ) -> bool32;
 
+        /// Retrieves the performance values contained in the PERFORMANCE_INFORMATION structure
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getperformanceinfo
         func GetPerformanceInfo(
             performanceInfo: *opaque,
             cb: uint32
         ) -> bool32;
 
+        /// Retrieves the load address for each device driver in the system
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumdevicedrivers
         func EnumDeviceDrivers(
             imageBase: *opaque,
             cb: uint32,
             bytesNeeded: *uint32
         ) -> bool32;
 
+        /// Retrieves the base name of the specified device driver
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getdevicedriverbasenamea
         func GetDeviceDriverBaseNameA(
             imageBase: *opaque,
             baseName: *char8,
             nSize: uint32
         ) -> uint32;
 
+        /// Retrieves the path available for the specified device driver
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getdevicedriverfilenamea
         func GetDeviceDriverFileNameA(
             imageBase: *opaque,
             fileName: *char8,

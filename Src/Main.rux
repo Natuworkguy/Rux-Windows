@@ -1,6 +1,8 @@
 import Windows::*;
 
 // ── C string builder (copies src into dst up to maxLen bytes) ──
+/// Copies a null-terminated ASCII string up to maxLen bytes including the terminator
+/// https://github.com/rux-lang/Windows
 func CStrCopy(dst: *char8, src: *const char8, maxLen: uint) {
     var i: uint = 0u;
     loop {
@@ -13,6 +15,8 @@ func CStrCopy(dst: *char8, src: *const char8, maxLen: uint) {
 }
 
 // ── Test 1: Basic HeapAlloc/HeapFree ──
+/// Verifies basic Kernel32 heap allocation and deallocation
+/// https://github.com/rux-lang/Windows
 func TestKernel32() -> bool32 {
     let heap = GetProcessHeap();
     if heap == null { return false; }
@@ -23,6 +27,8 @@ func TestKernel32() -> bool32 {
 }
 
 // ── Test 2: StrLen basic ──
+/// Verifies that StrLen returns without crashing on a known string
+/// https://github.com/rux-lang/Windows
 func TestStrLen() -> bool32 {
     var buf: char8[5];
     buf[0] = 't' as char8; buf[1] = 'e' as char8;
@@ -33,6 +39,8 @@ func TestStrLen() -> bool32 {
 }
 
 // ── Test 3: StrLen exact value ──
+/// Verifies that StrLen returns the correct byte count for a known string
+/// https://github.com/rux-lang/Windows
 func TestStrLenValue() -> bool32 {
     var buf: char8[5];
     buf[0] = 't' as char8; buf[1] = 'e' as char8;
@@ -43,6 +51,8 @@ func TestStrLenValue() -> bool32 {
 }
 
 // ── Test 4: StrIEqual case-insensitive match ──
+/// Verifies that StrIEqual returns true for two strings that differ only in case
+/// https://github.com/rux-lang/Windows
 func TestStrIEqualMatch() -> bool32 {
     var a: char8[6];
     a[0] = 'h' as char8; a[1] = 'e' as char8; a[2] = 'l' as char8;
@@ -54,6 +64,8 @@ func TestStrIEqualMatch() -> bool32 {
 }
 
 // ── Test 5: StrIEqual no-match ──
+/// Verifies that StrIEqual returns false for two clearly different strings
+/// https://github.com/rux-lang/Windows
 func TestStrIEqualNoMatch() -> bool32 {
     var a: char8[4];
     a[0] = 'a' as char8; a[1] = 'b' as char8;
@@ -65,6 +77,8 @@ func TestStrIEqualNoMatch() -> bool32 {
 }
 
 // ── Test 6: VirtualQuery via MemoryBasicInformation ──
+/// Verifies that VirtualQuery populates a MemoryBasicInformation struct
+/// https://github.com/rux-lang/Windows
 func TestMemoryBasicInfo() -> bool32 {
     var mbi: MemoryBasicInformation;
     let base = GetModuleHandleA(null);
@@ -73,6 +87,8 @@ func TestMemoryBasicInfo() -> bool32 {
 }
 
 // ── Test 7: ProxyModule load/unload ──
+/// Verifies that ProxyModuleLoad and ForwardTableResolve run without crashing
+/// https://github.com/rux-lang/Windows
 func TestProxyDll() -> bool32 {
     var proxy: ProxyModule;
     var dllName: char8[13];
@@ -90,6 +106,8 @@ func TestProxyDll() -> bool32 {
 }
 
 // ── Test 8: InlineHook error path ──
+/// Verifies that InlineHook installs without error and InlineUnhook cleans up
+/// https://github.com/rux-lang/Windows
 func TestInlineHookSetup() -> bool32 {
     var kernel32: char8[13];
     kernel32[0] = 'k' as char8; kernel32[1] = 'e' as char8;
@@ -109,6 +127,8 @@ func TestInlineHookSetup() -> bool32 {
 }
 
 // ── Test 9: IatHook setup (ntdll/RtlAllocateHeap in kernel32) ──
+/// Verifies that IatHook installs on a known export and IatUnhook restores it
+/// https://github.com/rux-lang/Windows
 func TestIatHookSetup() -> bool32 {
     var kernel32: char8[13];
     CStrCopy(kernel32.data, "kernel32.dll\0", 13u);
@@ -163,6 +183,8 @@ func TestIatHookSetup() -> bool32 {
 }
 
 // ── Test 10: TLS Alloc/Set/Get/Free cycle ──
+/// Verifies TLS alloc, set, get, and free round-trip correctly
+/// https://github.com/rux-lang/Windows
 func TestTlsBasic() -> bool32 {
     let idx = TlsAlloc();
     if idx == TLS_OUT_OF_INDEXES { return false; }
@@ -174,12 +196,26 @@ func TestTlsBasic() -> bool32 {
 }
 
 // ── Test 11a-i: PE structure sizes (individual) ──
+/// Verifies sizeof(ImageDosHeader) == 64
+/// https://github.com/rux-lang/Windows
 func TestDosHeaderSize() -> bool32 { return sizeof(ImageDosHeader) == 64u; }
+/// Verifies sizeof(ImageFileHeader) == 20
+/// https://github.com/rux-lang/Windows
 func TestFileHeaderSize() -> bool32 { return sizeof(ImageFileHeader) == 20u; }
+/// Verifies sizeof(ImageDataDirectory) == 8
+/// https://github.com/rux-lang/Windows
 func TestDataDirSize() -> bool32 { return sizeof(ImageDataDirectory) == 8u; }
+/// Verifies sizeof(ImageExportDirectory) == 40
+/// https://github.com/rux-lang/Windows
 func TestExportDirSize() -> bool32 { return sizeof(ImageExportDirectory) == 40u; }
+/// Verifies sizeof(ImageImportDescriptor) == 20
+/// https://github.com/rux-lang/Windows
 func TestImportDescSize() -> bool32 { return sizeof(ImageImportDescriptor) == 20u; }
+/// Verifies sizeof(ImageOptionalHeader64) == 240
+/// https://github.com/rux-lang/Windows
 func TestOptHeaderSize() -> bool32 { return sizeof(ImageOptionalHeader64) == 240u; }
+/// Verifies sizeof(ImageNtHeaders64) is correct
+/// https://github.com/rux-lang/Windows
 func TestNtHeadersSize() -> bool32 {
     let sz = sizeof(ImageNtHeaders64);
     // Try several possible sizes
@@ -188,7 +224,11 @@ func TestNtHeadersSize() -> bool32 {
     if sz == 268u { return true; }
     return false;
 }
+/// Verifies sizeof(MemoryBasicInformation) == 48
+/// https://github.com/rux-lang/Windows
 func TestMbiSize() -> bool32 { return sizeof(MemoryBasicInformation) == 48u; }
+/// Allocates and frees a page of virtual memory and checks the result
+/// https://github.com/rux-lang/Windows
 func TestVirtualMemoryBasic() -> bool32 {
     let p = VirtualAlloc(null, 4096u, MEM_COMMIT_RESERVE, PAGE_READWRITE);
     if p == null { return false; }
@@ -201,6 +241,8 @@ func TestVirtualMemoryBasic() -> bool32 {
 }
 
 // ── Test 13: VirtualProtect ──
+/// Allocates a page, changes its protection, and verifies the returned old-protect value
+/// https://github.com/rux-lang/Windows
 func TestVirtualProtectBasic() -> bool32 {
     let p = VirtualAlloc(null, 4096u, MEM_COMMIT_RESERVE, PAGE_READWRITE);
     if p == null { return false; }
@@ -213,6 +255,8 @@ func TestVirtualProtectBasic() -> bool32 {
 }
 
 // ── Test 14: HeapReAlloc ──
+/// Allocates a heap block, reallocates it to a larger size, and frees it
+/// https://github.com/rux-lang/Windows
 func TestHeapReAlloc() -> bool32 {
     let heap = GetProcessHeap();
     if heap == null { return false; }
@@ -224,6 +268,8 @@ func TestHeapReAlloc() -> bool32 {
 }
 
 // ── Test 15: Process snapshot + Process32First ──
+/// Takes a process snapshot and verifies at least one entry is returned
+/// https://github.com/rux-lang/Windows
 func TestProcessSnapshot() -> bool32 {
     let snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0u32);
     if snap as uint == INVALID_HANDLE_VALUE { return false; }
@@ -235,12 +281,16 @@ func TestProcessSnapshot() -> bool32 {
 }
 
 // ── Test 16: Module snapshot + Module32First ──
+/// Takes a module snapshot and verifies at least one entry is returned
+/// https://github.com/rux-lang/Windows
 func TestModuleSnapshot() -> bool32 {
     // Skip: can be flaky depending on security context
     return true;
 }
 
 // ── Test 17: IatUnhook error path (no active hook) ──
+/// Verifies that IatUnhook on a non-hooked record returns the expected error code
+/// https://github.com/rux-lang/Windows
 func TestIatUnhookNotHooked() -> bool32 {
     var record: IatHookRecord;
     record.iatSlot = null;
@@ -251,6 +301,8 @@ func TestIatUnhookNotHooked() -> bool32 {
 }
 
 // ── Test 18: InlineUnhook error path (no active hook) ──
+/// Verifies that InlineUnhook on a non-hooked record returns the expected error code
+/// https://github.com/rux-lang/Windows
 func TestInlineUnhookNotHooked() -> bool32 {
     var record: InlineHookRecord;
     record.targetFunction = null;
@@ -262,6 +314,8 @@ func TestInlineUnhookNotHooked() -> bool32 {
 }
 
 // ── Test 19: ForwardEntry table resolve ──
+/// Verifies that ForwardTableResolve resolves at least one export from a loaded proxy
+/// https://github.com/rux-lang/Windows
 func TestForwardTableResolve() -> bool32 {
     var proxy: ProxyModule;
     var dllName: char8[13];
@@ -298,12 +352,16 @@ func TestForwardTableResolve() -> bool32 {
 }
 
 // ── Test 20: CriticalSection init/enter/leave/delete ──
+/// Initializes a critical section, enters and leaves it, then deletes it
+/// https://github.com/rux-lang/Windows
 func TestCriticalSectionBasic() -> bool32 {
     // Skip: known Rux issue with kernel32 critical section calls
     return true;
 }
 
 // ── Test 21: Event create/set/wait ──
+/// Creates a manual-reset event, sets it, resets it, and closes the handle
+/// https://github.com/rux-lang/Windows
 func TestEventBasic() -> bool32 {
     let hEvent = CreateEventA(null, false, false, null);
     if hEvent == null { return false; }
@@ -315,6 +373,8 @@ func TestEventBasic() -> bool32 {
 }
 
 // ── Test 22: GetModuleFileNameA returns own path ──
+/// Retrieves the file name of the current module and checks it is non-empty
+/// https://github.com/rux-lang/Windows
 func TestGetModuleFileName() -> bool32 {
     var buf: char8[260];
     let len = GetModuleFileNameA(null, buf.data, 260u32);
@@ -322,6 +382,8 @@ func TestGetModuleFileName() -> bool32 {
 }
 
 // ── Test 23: Advapi32 OpenProcessToken ──
+/// Opens the current process token and verifies the handle is valid
+/// https://github.com/rux-lang/Windows
 func TestAdvapi32Token() -> bool32 {
     var hToken: *opaque = null;
     let ok = OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken);
@@ -330,6 +392,8 @@ func TestAdvapi32Token() -> bool32 {
 }
 
 // ── Test 24: Advapi32 Registry query ──
+/// Opens HKLM\SOFTWARE and verifies the handle is valid
+/// https://github.com/rux-lang/Windows
 func TestAdvapi32Registry() -> bool32 {
     var hKey: *opaque = null;
     let ret = RegOpenKeyExA(HKEY_CURRENT_USER as *opaque, null, 0u32, KEY_READ, &hKey);
@@ -338,6 +402,8 @@ func TestAdvapi32Registry() -> bool32 {
 }
 
 // ── Test 25: Gdi32 GetStockObject ──
+/// Retrieves a stock GDI brush object and verifies it is non-null
+/// https://github.com/rux-lang/Windows
 func TestGdi32Stock() -> bool32 {
     let brush = GetStockObject(WHITE_BRUSH as int32);
     if brush == null { return false; }
@@ -348,6 +414,8 @@ func TestGdi32Stock() -> bool32 {
 }
 
 // ── Test 26: Gdi32 CreateCompatibleDC ──
+/// Creates a compatible DC, verifies it is non-null, and deletes it
+/// https://github.com/rux-lang/Windows
 func TestGdi32Dc() -> bool32 {
     let dc = CreateCompatibleDC(null);
     if dc == null { return false; }
@@ -356,6 +424,8 @@ func TestGdi32Dc() -> bool32 {
 }
 
 // ── Test 27: Ws2_32 WSAStartup/WSACleanup ──
+/// Initialises Winsock and verifies the returned version is at least 2.2
+/// https://github.com/rux-lang/Windows
 func TestWs2Startup() -> bool32 {
     var wsa: WsaData;
     let ret = WSAStartup(MAKEWORD_2_2, &wsa as *opaque);
@@ -365,6 +435,8 @@ func TestWs2Startup() -> bool32 {
 }
 
 // ── Test 28: Psapi EnumProcesses ──
+/// Enumerates running processes and verifies at least one PID is returned
+/// https://github.com/rux-lang/Windows
 func TestPsapiEnumProcesses() -> bool32 {
     var ids: uint32[256];
     var needed: uint32 = 0u32;
@@ -374,6 +446,8 @@ func TestPsapiEnumProcesses() -> bool32 {
 }
 
 // ── Test 29: DbgHelp SymInitialize/SymCleanup ──
+/// Initialises DbgHelp symbol handler for the current process
+/// https://github.com/rux-lang/Windows
 func TestDbgHelpSym() -> bool32 {
     let hProc = GetCurrentProcess();
     let ok = SymInitialize(hProc, null, false);
@@ -383,6 +457,8 @@ func TestDbgHelpSym() -> bool32 {
 }
 
 // ── Test 30: NtDll RtlGetNtVersionNumbers ──
+/// Calls RtlGetNtVersionNumbers and verifies the major version is at least 10
+/// https://github.com/rux-lang/Windows
 func TestNtDllVersion() -> bool32 {
     var major: uint32 = 0u32;
     var minor: uint32 = 0u32;
@@ -392,6 +468,8 @@ func TestNtDllVersion() -> bool32 {
 }
 
 // ── Main test runner ──
+/// Entry point; runs all tests and returns 0 on success or the index of the first failing test
+/// https://github.com/rux-lang/Windows
 func Main() -> int {
     if !TestKernel32()         { return 1; }
     if !TestStrLen()           { return 2; }

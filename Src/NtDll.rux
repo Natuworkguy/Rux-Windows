@@ -136,6 +136,8 @@ module Windows {
     @[Import(lib: "ntdll.dll")]
     extern {
 
+        /// Retrieves information about the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess
         func NtQueryInformationProcess(
             processHandle: *opaque,
             infoClass: uint32,
@@ -144,6 +146,8 @@ module Windows {
             retLength: *uint32
         ) -> uint32;
 
+        /// Opens an existing process object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntopenprocess
         func NtOpenProcess(
             processHandle: *opaque,
             desiredAccess: uint32,
@@ -151,13 +155,21 @@ module Windows {
             clientId: *opaque
         ) -> uint32;
 
+        /// Closes an object handle
+        /// https://learn.microsoft.com/en-us/windows/hardware/drivers/ddi/ntifs/nf-ntifs-ntclose
         func NtClose(handle: *opaque) -> uint32;
 
+        /// Suspends all threads in the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winternl/
         func NtSuspendProcess(processHandle: *opaque) -> uint32;
 
+        /// Resumes all threads in the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winternl/
         func NtResumeProcess(processHandle: *opaque) -> uint32;
 
 
+        /// Retrieves the specified system information
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysysteminformation
         func NtQuerySystemInformation(
             infoClass: uint32,
             info: *opaque,
@@ -166,6 +178,8 @@ module Windows {
         ) -> uint32;
 
 
+        /// Provides information about a range of virtual memory in the address space of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winternl/
         func NtQueryVirtualMemory(
             processHandle: *opaque,
             baseAddress: *const opaque,
@@ -176,16 +190,28 @@ module Windows {
         ) -> uint32;
 
 
+        /// Returns version information about the currently running operating system
+        /// https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlgetversion
         func RtlGetVersion(versionInfo: *opaque) -> uint32;
 
+        /// Allocates a block of memory from a heap
+        /// https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlallocateheap
         func RtlAllocateHeap(heap: *opaque, flags: uint32, size: uint) -> *opaque;
 
+        /// Frees a memory block that was allocated from a heap by RtlAllocateHeap
+        /// https://learn.microsoft.com/en-us/windows/win32/devnotes/rtlfreeheap
         func RtlFreeHeap(heap: *opaque, flags: uint32, block: *opaque) -> bool32;
 
+        /// Retrieves the version number of the operating system at the NT layer
+        /// https://learn.microsoft.com/en-us/windows/win32/devnotes/
         func RtlGetNtVersionNumbers(major: *uint32, minor: *uint32, build: *uint32);
 
+        /// Returns a pointer to the IMAGE_NT_HEADERS for a PE image in memory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-imagentheader
         func RtlImageNtHeader(moduleBase: *opaque) -> *opaque;
 
+        /// Locates a directory entry in the image header and returns a pointer to the data
+        /// https://learn.microsoft.com/en-us/windows/win32/api/dbghelp/nf-dbghelp-imagedirectoryentrytodataex
         func RtlImageDirectoryEntryToData(
             moduleBase: *opaque,
             mappedAsImage: bool32,

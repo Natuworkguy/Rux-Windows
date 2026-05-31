@@ -495,7 +495,11 @@ module Windows {
         func ExitProcess(exitCode: uint32);
         
         // Error handling
+        /// Retrieves the calling thread's last-error code value
+        /// https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
         func GetLastError() -> uint32;
+        /// Sets the last-error code for the calling thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-setlasterror
         func SetLastError(error: uint32);
         
         // Heap management
@@ -541,13 +545,25 @@ module Windows {
         /// Suspends the execution of the current thread until the time-out interval elapses
         /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep
         func Sleep(milliseconds: uint32);
+        /// Retrieves the number of milliseconds that have elapsed since the system was started (32-bit)
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-gettickcount
         func GetTickCount() -> uint32;
+        /// Retrieves the number of milliseconds that have elapsed since the system was started (64-bit)
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-gettickcount64
         func GetTickCount64() -> uint64;
+        /// Retrieves the current value of the high-resolution performance counter
+        /// https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
         func QueryPerformanceCounter(counterOut: *uint64) -> bool32;
+        /// Retrieves the frequency of the high-resolution performance counter
+        /// https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency
         func QueryPerformanceFrequency(freqOut: *uint64) -> bool32;
+        /// Retrieves the current system date and time as a FILETIME structure
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtimeasfiletime
         func GetSystemTimeAsFileTime(time: *uint64);
         
         // File I/O
+        /// Reads data from the specified file or input/output device
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
         func ReadFile(
             file: *opaque,
             buffer: *opaque,
@@ -555,6 +571,8 @@ module Windows {
             numberOfBytesRead: *uint32,
             overlapped: *opaque) -> bool32;
         
+        /// Writes data to the specified file or input/output device
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile
         func WriteFile(
             file: *opaque,
             buffer: *const opaque,
@@ -563,6 +581,8 @@ module Windows {
             overlapped: *opaque) -> bool32;
         
         // Console output
+        /// Writes a character string to a console screen buffer (ANSI)
+        /// https://learn.microsoft.com/en-us/windows/console/writeconsole
         func WriteConsoleA(
             consoleOutput: *opaque,
             buffer: *const char8,
@@ -570,6 +590,8 @@ module Windows {
             numberOfCharsWritten: *uint32,
             reserved: *opaque) -> bool32;
         
+        /// Writes a character string to a console screen buffer (Unicode)
+        /// https://learn.microsoft.com/en-us/windows/console/writeconsole
         func WriteConsoleW(
             consoleOutput: *opaque,
             buffer: *const char16,
@@ -578,12 +600,22 @@ module Windows {
             reserved: *opaque) -> bool32;
         
         // Interlocked operations for thread safety
+        /// Atomically exchanges a pair of pointer values
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedexchangepointer
         func InterlockedExchangePointer(target: *opaque, value: *opaque) -> *opaque;
+        /// Performs an atomic compare-and-exchange operation on pointer values
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedcompareexchangepointer
         func InterlockedCompareExchangePointer(target: *opaque, exchange: *opaque, comparand: *opaque) -> *opaque;
+        /// Atomically sets a 32-bit variable to the specified value
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedexchange
         func InterlockedExchange(target: *int32, value: int32) -> int32;
+        /// Performs an atomic compare-and-exchange on a 32-bit value
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedcompareexchange
         func InterlockedCompareExchange(target: *int32, exchange: int32, comparand: int32) -> int32;
         
         // WOW64 detection
+        /// Determines whether the specified process is running under WOW64
+        /// https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-iswow64process
         func IsWow64Process(hProcess: *opaque, wow64Process: *bool32) -> bool32;
     }
 
@@ -594,105 +626,237 @@ module Windows {
     @[Import(lib: "kernel32.dll")]
     extern {
         // Process management
+        /// Opens an existing local process object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess
         func OpenProcess(desiredAccess: uint32, inheritHandle: bool32, processId: uint32) -> *opaque;
+        /// Closes an open object handle
+        /// https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
         func CloseHandle(handle: *opaque) -> bool32;
+        /// Terminates the specified process and all of its threads
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
         func TerminateProcess(hProcess: *opaque, exitCode: uint32) -> bool32;
+        /// Retrieves a pseudo handle for the current process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess
         func GetCurrentProcess() -> *opaque;
+        /// Retrieves the process identifier of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessid
         func GetCurrentProcessId() -> uint32;
+        /// Retrieves the termination status of the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess
         func GetExitCodeProcess(hProcess: *opaque, exitCode: *uint32) -> bool32;
+        /// Retrieves the full name of the executable image for the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-queryfullprocessimagenamea
         func QueryFullProcessImageNameA(hProcess: *opaque, flags: uint32, name: *char8, size: *uint32) -> bool32;
         
         // Process memory
+        /// Reads data from an area of memory in a specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-readprocessmemory
         func ReadProcessMemory(hProcess: *opaque, baseAddress: *const opaque, buffer: *opaque, size: uint, bytesRead: *uint) -> bool32;
+        /// Writes data to an area of memory in a specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory
         func WriteProcessMemory(hProcess: *opaque, baseAddress: *opaque, buffer: *const opaque, size: uint, bytesWritten: *uint) -> bool32;
         
         // Virtual memory (remote)
+        /// Reserves, commits, or changes the state of a region of memory within the virtual address space of a specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
         func VirtualAllocEx(hProcess: *opaque, address: *opaque, size: uint, allocationType: uint32, protect: uint32) -> *opaque;
+        /// Releases, decommits, or releases and decommits a region of memory within the virtual address space of a specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualfreeex
         func VirtualFreeEx(hProcess: *opaque, address: *opaque, size: uint, freeType: uint32) -> bool32;
+        /// Changes the protection on a region of committed pages in the virtual address space of a specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotectex
         func VirtualProtectEx(hProcess: *opaque, address: *opaque, size: uint, newProtect: uint32, oldProtect: *uint32) -> bool32;
+        /// Retrieves information about a range of pages within the virtual address space of a specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualqueryex
         func VirtualQueryEx(hProcess: *opaque, address: *const opaque, buffer: *opaque, length: uint) -> uint;
         
         // Virtual memory (local)
+        /// Reserves, commits, or changes the state of a region of pages in the virtual address space of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
         func VirtualAlloc(address: *opaque, size: uint, allocationType: uint32, protect: uint32) -> *opaque;
+        /// Releases, decommits, or releases and decommits a region of pages within the virtual address space of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualfree
         func VirtualFree(address: *opaque, size: uint, freeType: uint32) -> bool32;
+        /// Changes the protection on a region of committed pages in the virtual address space of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualprotect
         func VirtualProtect(address: *opaque, size: uint, newProtect: uint32, oldProtect: *uint32) -> bool32;
+        /// Retrieves information about a range of pages in the virtual address space of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualquery
         func VirtualQuery(address: *const opaque, buffer: *opaque, length: uint) -> uint;
         
         // Remote threads
+        /// Creates a thread that runs in the virtual address space of another process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread
         func CreateRemoteThread(hProcess: *opaque, threadAttr: *opaque, stackSize: uint, startAddress: *const opaque, parameter: *opaque, creationFlags: uint32, threadId: *uint32) -> *opaque;
         
         // Synchronization
+        /// Waits until the specified object is in the signaled state or the time-out interval elapses
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
         func WaitForSingleObject(hHandle: *opaque, milliseconds: uint32) -> uint32;
+        /// Waits until one or all of the specified objects are in the signaled state or the time-out interval elapses
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects
         func WaitForMultipleObjects(count: uint32, handles: *opaque, waitAll: bool32, milliseconds: uint32) -> uint32;
         
         // DLL management
+        /// Loads the specified module into the address space of the calling process (ANSI)
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya
         func LoadLibraryA(libFileName: *const char8) -> *opaque;
+        /// Loads the specified module into the address space of the calling process (Unicode)
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryw
         func LoadLibraryW(libFileName: *const char16) -> *opaque;
+        /// Loads the specified module with extended options
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexa
         func LoadLibraryExA(libFileName: *const char8, file: *opaque, flags: uint32) -> *opaque;
+        /// Retrieves a module handle for the specified module (ANSI)
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
         func GetModuleHandleA(moduleName: *const char8) -> *opaque;
+        /// Retrieves a module handle for the specified module (Unicode)
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlew
         func GetModuleHandleW(moduleName: *const char16) -> *opaque;
+        /// Retrieves the address of an exported function or variable from the specified DLL
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
         func GetProcAddress(hModule: *opaque, procName: *const char8) -> *const opaque;
+        /// Frees the loaded DLL module and decrements its reference count
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
         func FreeLibrary(hModule: *opaque) -> bool32;
+        /// Retrieves the fully qualified path for the file that contains the specified module
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamea
         func GetModuleFileNameA(hModule: *opaque, filename: *char8, size: uint32) -> uint32;
+        /// Disables the DLL_THREAD_ATTACH and DLL_THREAD_DETACH notifications for the specified DLL
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-disablethreadlibrarycalls
         func DisableThreadLibraryCalls(hModule: *opaque) -> bool32;
+        /// Adds a directory to the search path used to locate DLLs for the application
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setdlldirectorya
         func SetDllDirectoryA(pathName: *const char8) -> bool32;
+        /// Retrieves a module handle for the specified module with optional flags
+        /// https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandleexa
         func GetModuleHandleExA(flags: uint32, name: *const char8, hModule: *opaque) -> bool32;
         
         // Toolhelp32 snapshot (process/module enumeration)
+        /// Takes a snapshot of the specified processes, heaps, modules, and threads
+        /// https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot
         func CreateToolhelp32Snapshot(flags: uint32, processId: uint32) -> *opaque;
+        /// Retrieves information about the first process encountered in a system snapshot
+        /// https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32first
         func Process32First(hSnapshot: *opaque, entry: *ProcessEntry32) -> bool32;
+        /// Retrieves information about the next process recorded in a system snapshot
+        /// https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32next
         func Process32Next(hSnapshot: *opaque, entry: *ProcessEntry32) -> bool32;
+        /// Retrieves information about the first module associated with a process in a snapshot
+        /// https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-module32first
         func Module32First(hSnapshot: *opaque, entry: *ModuleEntry32) -> bool32;
+        /// Retrieves information about the next module associated with a process in a snapshot
+        /// https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-module32next
         func Module32Next(hSnapshot: *opaque, entry: *ModuleEntry32) -> bool32;
         
         // Thread management
+        /// Creates a thread to execute within the virtual address space of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
         func CreateThread(threadAttr: *opaque, stackSize: uint, startAddress: *const opaque, parameter: *opaque, flags: uint32, threadId: *uint32) -> *opaque;
+        /// Opens an existing thread object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthread
         func OpenThread(desiredAccess: uint32, inheritHandle: bool32, threadId: uint32) -> *opaque;
+        /// Retrieves a pseudo handle for the calling thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentthread
         func GetCurrentThread() -> *opaque;
+        /// Retrieves the thread identifier of the calling thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentthreadid
         func GetCurrentThreadId() -> uint32;
+        /// Ends the calling thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread
         func ExitThread(exitCode: uint32);
+        /// Terminates a thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminatethread
         func TerminateThread(hThread: *opaque, exitCode: uint32) -> bool32;
+        /// Retrieves the termination status of the specified thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodethread
         func GetExitCodeThread(hThread: *opaque, exitCode: *uint32) -> bool32;
         
         // Thread control
+        /// Suspends the specified thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-suspendthread
         func SuspendThread(hThread: *opaque) -> uint32;
+        /// Decrements a thread's suspend count; when the count reaches zero, the thread resumes execution
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-resumethread
         func ResumeThread(hThread: *opaque) -> uint32;
+        /// Sets the priority value for the specified thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadpriority
         func SetThreadPriority(hThread: *opaque, priority: int32) -> bool32;
+        /// Retrieves the priority value for the specified thread
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadpriority
         func GetThreadPriority(hThread: *opaque) -> int32;
+        /// Causes the calling thread to yield execution to another thread that is ready to run
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-switchtothread
         func SwitchToThread() -> bool32;
         
         // Event objects
+        /// Creates or opens a named or unnamed event object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createeventa
         func CreateEventA(eventAttr: *opaque, manualReset: bool32, initialState: bool32, name: *const char8) -> *opaque;
+        /// Sets the specified event object to the signaled state
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setevent
         func SetEvent(hEvent: *opaque) -> bool32;
+        /// Sets the specified event object to the nonsignaled state
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent
         func ResetEvent(hEvent: *opaque) -> bool32;
         
         // Mutex objects
+        /// Creates or opens a named or unnamed mutex object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createmutexa
         func CreateMutexA(mutexAttr: *opaque, initialOwner: bool32, name: *const char8) -> *opaque;
+        /// Releases ownership of the specified mutex object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-releasemutex
         func ReleaseMutex(hMutex: *opaque) -> bool32;
         
         // Critical sections
+        /// Initializes a critical section object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-initializecriticalsection
         func InitializeCriticalSection(cs: *opaque);
+        /// Waits for ownership of the specified critical section object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-entercriticalsection
         func EnterCriticalSection(cs: *opaque);
+        /// Releases ownership of the specified critical section object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-leavecriticalsection
         func LeaveCriticalSection(cs: *opaque);
+        /// Releases all resources used by an unowned critical section object
+        /// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-deletecriticalsection
         func DeleteCriticalSection(cs: *opaque);
         
         // Thread Local Storage
+        /// Allocates a thread local storage index
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsalloc
         func TlsAlloc() -> uint32;
+        /// Stores a value in the calling thread's thread local storage slot
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlssetvalue
         func TlsSetValue(tlsIndex: uint32, tlsValue: *opaque) -> bool32;
+        /// Retrieves the value in the calling thread's thread local storage slot
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
         func TlsGetValue(tlsIndex: uint32) -> *opaque;
+        /// Releases a thread local storage index, making it available for reuse
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsfree
         func TlsFree(tlsIndex: uint32) -> bool32;
         
         // System directories
+        /// Retrieves the path of the system directory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemdirectorya
         func GetSystemDirectoryA(buffer: *char8, size: uint32) -> uint32;
+        /// Retrieves the path of the Windows directory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getwindowsdirectorya
         func GetWindowsDirectoryA(buffer: *char8, size: uint32) -> uint32;
         
         // Debugging
+        /// Sends a string to the debugger for display
+        /// https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa
         func OutputDebugStringA(outputString: *const char8);
         
         // Cache control
+        /// Flushes the instruction cache for the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-flushinstructioncache
         func FlushInstructionCache(hProcess: *opaque, baseAddress: *const opaque, size: uint) -> bool32;
         
         // Error formatting
+        /// Formats a message string from a message table resource or a caller-supplied buffer
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-formatmessagea
         func FormatMessageA(
             flags: uint32,
             source: *opaque,
@@ -704,17 +868,33 @@ module Windows {
         ) -> uint32;
         
         // Environment / System info
+        /// Retrieves the path of the directory designated for temporary files
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-gettemppatha
         func GetTempPathA(bufLen: uint32, buf: *char8) -> uint32;
+        /// Retrieves the NetBIOS name of the local computer
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcomputernamea
         func GetComputerNameA(buf: *char8, size: *uint32) -> bool32;
+        /// Replaces environment-variable strings with the values defined for the current user
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-expandenvironmentstringsa
         func ExpandEnvironmentStringsA(src: *const char8, dst: *char8, size: uint32) -> uint32;
+        /// Retrieves the contents of the specified variable from the environment block of the calling process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-getenvironmentvariablea
         func GetEnvironmentVariableA(name: *const char8, buf: *char8, size: uint32) -> uint32;
+        /// Sets the contents of the specified environment variable for the current process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-setenvironmentvariablea
         func SetEnvironmentVariableA(name: *const char8, value: *const char8) -> bool32;
         
         // Locale / Code page
+        /// Returns the locale identifier for the user default locale
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-getuserdefaultlcid
         func GetUserDefaultLCID() -> uint32;
+        /// Returns the current Windows ANSI code page identifier for the operating system
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-getacp
         func GetACP() -> uint32;
         
         // File operations
+        /// Creates or opens a file or I/O device
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
         func CreateFileA(
             fileName: *const char8,
             desiredAccess: uint32,
@@ -725,7 +905,11 @@ module Windows {
             templateFile: *opaque
         ) -> *opaque;
         
+        /// Retrieves the size of the specified file as a 64-bit value
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex
         func GetFileSizeEx(file: *opaque, size: *uint64) -> bool32;
+        /// Moves the file pointer of the specified file
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfilepointerex
         func SetFilePointerEx(
             file: *opaque,
             distance: int64,
@@ -733,21 +917,47 @@ module Windows {
             moveMethod: uint32
         ) -> bool32;
         
+        /// Retrieves file system attributes for a specified file or directory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesa
         func GetFileAttributesA(fileName: *const char8) -> uint32;
+        /// Sets the attributes for a file or directory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfileattributesa
         func SetFileAttributesA(fileName: *const char8, attrs: uint32) -> bool32;
+        /// Retrieves the file type of the specified file
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
         func GetFileType(hFile: *opaque) -> uint32;
         
+        /// Copies an existing file to a new file
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfilea
         func CopyFileA(existing: *const char8, newFile: *const char8, failIfExists: bool32) -> bool32;
+        /// Moves an existing file or directory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefilea
         func MoveFileA(existing: *const char8, newFile: *const char8) -> bool32;
+        /// Deletes an existing file
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-deletefilea
         func DeleteFileA(fileName: *const char8) -> bool32;
         
         // Directory operations
+        /// Creates a new directory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectorya
         func CreateDirectoryA(path: *const char8, securityAttr: *opaque) -> bool32;
+        /// Deletes an existing empty directory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-removedirectorya
         func RemoveDirectoryA(path: *const char8) -> bool32;
+        /// Retrieves the current directory for the current process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcurrentdirectorya
         func GetCurrentDirectoryA(bufLen: uint32, buf: *char8) -> uint32;
+        /// Changes the current directory for the current process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setcurrentdirectorya
         func SetCurrentDirectoryA(path: *const char8) -> bool32;
+        /// Retrieves a bitmask representing the currently available disk drives
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlogicaldrives
         func GetLogicalDrives() -> uint32;
+        /// Determines whether a disk drive is a removable, fixed, CD-ROM, RAM disk, or network drive
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypea
         func GetDriveTypeA(rootPath: *const char8) -> uint32;
+        /// Retrieves information about the amount of space available on a disk volume
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespaceexa
         func GetDiskFreeSpaceExA(
             dir: *const char8,
             freeBytesAvail: *uint64,
@@ -756,26 +966,60 @@ module Windows {
         ) -> bool32;
         
         // System information
+        /// Retrieves information about the current system
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsysteminfo
         func GetSystemInfo(info: *opaque);
+        /// Retrieves information about the current system to an application running under WOW64
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getnativesysteminfo
         func GetNativeSystemInfo(info: *opaque);
+        /// Retrieves information about the system's current usage of both physical and virtual memory
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-globalmemorystatusex
         func GlobalMemoryStatusEx(buffer: *opaque) -> bool32;
+        /// Retrieves information about logical processors and related hardware
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformation
         func GetLogicalProcessorInformation(buffer: *opaque, retLen: *uint32) -> bool32;
         
         // Time functions
+        /// Retrieves the current system date and time in UTC
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtime
         func GetSystemTime(time: *opaque);
+        /// Sets the current system time and date in UTC
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime
         func SetSystemTime(time: *opaque) -> bool32;
+        /// Retrieves the current local date and time
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlocaltime
         func GetLocalTime(time: *opaque);
+        /// Sets the current local time and date
+        /// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setlocaltime
         func SetLocalTime(time: *opaque) -> bool32;
+        /// Converts a file time to a local file time
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-filetimetolocalfiletime
         func FileTimeToLocalFileTime(inFileTime: *uint64, outLocal: *uint64) -> bool32;
+        /// Converts a file time to system time format
+        /// https://learn.microsoft.com/en-us/windows/win32/api/timezoneapi/nf-timezoneapi-filetimetosystemtime
         func FileTimeToSystemTime(inFileTime: *uint64, systemTime: *opaque) -> bool32;
+        /// Converts a system time to file time format
+        /// https://learn.microsoft.com/en-us/windows/win32/api/timezoneapi/nf-timezoneapi-systemtimetofiletime
         func SystemTimeToFileTime(systemTime: *opaque, fileTime: *uint64) -> bool32;
+        /// Compares two file times
+        /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-comparefiletime
         func CompareFileTime(time1: *uint64, time2: *uint64) -> int32;
         
         // Console control
+        /// Sets the title bar string for the current console window
+        /// https://learn.microsoft.com/en-us/windows/console/setconsoletitle
         func SetConsoleTitleA(title: *const char8) -> bool32;
+        /// Retrieves the title bar string for the current console window
+        /// https://learn.microsoft.com/en-us/windows/console/getconsoletitle
         func GetConsoleTitleA(buf: *char8, size: uint32) -> uint32;
+        /// Retrieves the current input mode of a console input buffer or output mode of a console screen buffer
+        /// https://learn.microsoft.com/en-us/windows/console/getconsolemode
         func GetConsoleMode(console: *opaque, mode: *uint32) -> bool32;
+        /// Sets the input mode of a console input buffer or the output mode of a console screen buffer
+        /// https://learn.microsoft.com/en-us/windows/console/setconsolemode
         func SetConsoleMode(console: *opaque, mode: uint32) -> bool32;
+        /// Sets the attributes of characters written to the console screen buffer
+        /// https://learn.microsoft.com/en-us/windows/console/setconsoletextattribute
         func SetConsoleTextAttribute(console: *opaque, attrs: uint16) -> bool32;
     }
 

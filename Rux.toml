@@ -3,4 +3,4 @@ Name = "Windows"
 Version = "0.2.0"
 Type = "Source"
 Description = "Windows API bindings"
-Authors = ["Rux Contributors <info@rux-lang.dev>"]
+Authors = ["Rux Contributors <info@rux-lang.dev>", "the-lust"]

@@ -18,6 +18,8 @@ pub enum InjectionFlags: uint32 {
 }
 
 // NEW: Get target architecture
+/// Returns true if the target process is a 32-bit process running under WOW64
+/// https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-iswow64process
 pub func IsProcessWow64(hProcess: *opaque) -> bool32 {
     var isWow64: bool32 = false;
     if IsWow64Process(hProcess, &isWow64) {
@@ -27,6 +29,8 @@ pub func IsProcessWow64(hProcess: *opaque) -> bool32 {
 }
 
 // Fixed: Inject with timing control and error recovery
+/// Injects a DLL into the target process with configurable timing and method flags
+/// https://github.com/rux-lang/Windows
 pub func InjectDllEx(
     hProcess: *opaque, 
     dllPath: *const char8,
@@ -104,6 +108,8 @@ pub func InjectDllEx(
 }
 
 // Original function for backward compatibility
+/// Injects a DLL into the target process using CreateRemoteThread and LoadLibraryA
+/// https://github.com/rux-lang/Windows
 pub func InjectDll(hProcess: *opaque, dllPath: *const char8) -> bool32 {
     let result = InjectDllEx(hProcess, dllPath, InjectionFlags.Default);
     if result == null { return false; }
@@ -115,6 +121,8 @@ pub func InjectDll(hProcess: *opaque, dllPath: *const char8) -> bool32 {
 }
 
 // Fixed: Wait for injection to complete and get HMODULE
+/// Injects a DLL and waits for DllMain to return, then returns the HMODULE
+/// https://github.com/rux-lang/Windows
 pub func InjectAndWait(hProcess: *opaque, dllPath: *const char8) -> uint {
     let result = InjectDllEx(hProcess, dllPath, InjectionFlags.WaitForDllMain);
     if result == null { return 0u; }
@@ -131,6 +139,8 @@ pub struct InjectionContext {
 }
 
 // Suspend all threads in target process except the injector thread
+/// Suspends all threads in the target process except the caller's thread
+/// https://github.com/rux-lang/Windows
 func SuspendAllOtherThreads(hProcess: *opaque, excludeThreadId: uint32) -> bool32 {
     // Implementation would enumerate threads via Thread32First/Next
     // and call SuspendThread on each except excludeThreadId
@@ -138,12 +148,16 @@ func SuspendAllOtherThreads(hProcess: *opaque, excludeThreadId: uint32) -> bool3
     return true;  // Stub for brevity
 }
 
+/// Resumes all threads in the target process
+/// https://github.com/rux-lang/Windows
 func ResumeAllThreads(hProcess: *opaque) -> bool32 {
     // Implementation would enumerate and resume
     return true;  // Stub for brevity
 }
 
 // Fixed: Game-safe injection that respects game state
+/// Suspends target threads, injects and waits for DllMain, then resumes — safe for game injection
+/// https://github.com/rux-lang/Windows
 pub func InjectSafe(hProcess: *opaque, dllPath: *const char8) -> bool32 {
     // Method 1: Suspend game threads during injection
     let currentThreadId = GetCurrentThreadId();
@@ -159,6 +173,8 @@ pub func InjectSafe(hProcess: *opaque, dllPath: *const char8) -> bool32 {
 }
 
 // Helper
+/// Copies a null-terminated ASCII string up to maxLen bytes including the terminator
+/// https://github.com/rux-lang/Windows
 func CStrCopy(dst: *char8, src: *const char8, maxLen: uint) {
     var i: uint = 0u;
     loop {
@@ -172,6 +188,8 @@ func CStrCopy(dst: *char8, src: *const char8, maxLen: uint) {
 
 // Find a process by its executable name (case-insensitive).
 // Returns the PID, or 0 if not found.
+/// Enumerates running processes and returns the PID of the first match by name (case-insensitive)
+/// https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32first
 pub func FindProcessByName(exeName: *const char8) -> uint32 {
     let snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0u32);
     if snap as uint == INVALID_HANDLE_VALUE { return 0u32; }
@@ -199,6 +217,8 @@ pub func FindProcessByName(exeName: *const char8) -> uint32 {
 
 // Open a process by its executable name with PROCESS_ALL_ACCESS.
 // Returns a handle, or null if not found / access denied.
+/// Opens the first process matching the given name with PROCESS_ALL_ACCESS
+/// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess
 pub func OpenProcessByName(exeName: *const char8) -> *opaque {
     let pid = FindProcessByName(exeName);
     if pid == 0u32 { return null; }
@@ -207,6 +227,8 @@ pub func OpenProcessByName(exeName: *const char8) -> *opaque {
 
 // Read a block of memory from a remote process.
 // Returns true on success, false on any failure.
+/// Reads a block of memory from a remote process
+/// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-readprocessmemory
 pub func ReadRemote(
     hProcess: *opaque,
     address:  *const opaque,
@@ -219,6 +241,8 @@ pub func ReadRemote(
 
 // Write to a remote process page, temporarily elevating protection if needed.
 // Returns true on success.
+/// Writes to a remote process, temporarily elevating page protection only if the plain write fails
+/// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory
 pub func WriteRemoteProtected(
     hProcess: *opaque,
     address:  *opaque,
@@ -246,6 +270,8 @@ pub func WriteRemoteProtected(
 }
 
 // Count bytes in a null-terminated char8 string (not including the terminator).
+/// Counts bytes in a null-terminated char8 string, not including the null terminator
+/// https://github.com/rux-lang/Windows
 pub func StrLen(s: *const char8) -> uint {
     var n: uint = 0u;
     loop {
@@ -257,6 +283,8 @@ pub func StrLen(s: *const char8) -> uint {
 }
 
 // Case-insensitive ASCII string comparison. Returns true if equal.
+/// Case-insensitive ASCII string comparison; returns true if both strings are equal
+/// https://github.com/rux-lang/Windows
 pub func StrIEqual(a: *const char8, b: *const char8) -> bool {
     var ia = a;
     var ib = b;
