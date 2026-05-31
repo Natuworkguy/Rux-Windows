@@ -1,12 +1,12 @@
 # Windows
 
-Windows API bindings for [Rux](https://rux-lang.dev).
+Windows API bindings for [Rux](https://rux-lang.dev).All functions follow the official [Microsoft Win32 documentation](https://learn.microsoft.com/en-us/windows/win32/api/).
 
 ## Install
 
 ```toml
 [Dependencies]
-Windows = "0.2.0"
+Windows = "0.2.1"
 ```
 
 ## Modules
@@ -26,6 +26,59 @@ Windows = "0.2.0"
 | `User32.rux` | user32.dll — windows, messages, controls, input |
 | `WinHvPlatform.rux` | WinHvPlatform.dll — Hyper-V whpx |
 | `Ws2_32.rux` | ws2_32.dll — sockets (Winsock 2) |
+
+### Memory Management
+
+Functions for heap-based memory allocation.
+
+| Function           | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| `GetProcessHeap()` | Returns a handle to the default heap of the calling process |
+| `HeapAlloc()`      | Allocates a block of memory from a specified heap           |
+| `HeapReAlloc()`    | Reallocates a block of memory from a heap                   |
+| `HeapFree()`       | Frees a memory block allocated from a heap                  |
+
+### Memory Operations
+
+Low-level memory utility routines (RTL).
+
+| Function          | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `RtlFillMemory()` | Fills a block of memory with a specified value |
+| `RtlZeroMemory()` | Fills a block of memory with zeros             |
+| `RtlCopyMemory()` | Copies a block of memory to another location   |
+
+### Console I/O
+
+Functions for allocating and writing to a console.
+
+| Function          | Description                                                     |
+| ----------------- | --------------------------------------------------------------- |
+| `AllocConsole()`  | Allocates a new console for the calling process                 |
+| `GetStdHandle()`  | Retrieves a handle to a standard device (stdin, stdout, stderr) |
+| `WriteConsoleA()` | Writes a string of ANSI characters to the console               |
+| `WriteConsoleW()` | Writes a string of UTF-16 characters to the console             |
+| `Beep()`          | Generates a tone on the system speaker                          |
+
+### String Conversion
+
+| Function                | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `MultiByteToWideChar()` | Converts a multi-byte ANSI string to a UTF-16 wide string |
+
+### Process & Thread Control
+
+| Function        | Description                                        |
+| --------------- | -------------------------------------------------- |
+| `Sleep()`       | Suspends the execution of the current thread       |
+| `ExitProcess()` | Terminates the calling process and all its threads |
+
+### Error Handling
+
+| Function         | Description                                         |
+| ---------------- | --------------------------------------------------- |
+| `GetLastError()` | Retrieves the last-error code of the calling thread |
+
 
 ## Example
 
@@ -48,4 +101,4 @@ func Main() -> int {
 
 ## License
 
-MIT
+[MIT](LICENSE)
