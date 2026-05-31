@@ -257,6 +257,21 @@ module Windows {
     }
 
 
+    // ── Utility — C string copy ──
+    /// Copies a null-terminated ASCII string up to maxLen bytes including the terminator
+    /// https://github.com/rux-lang/Windows
+    func CStrCopy(dst: *char8, src: *const char8, maxLen: uint) {
+        var i: uint = 0u;
+        loop {
+            if i >= maxLen { break; }
+            let c = *((src as uint + i) as *const char8);
+            *((dst as uint + i) as *char8) = c;
+            if c as uint8 == 0u8 { break; }
+            i = i + 1u;
+        }
+    }
+
+
     // Constants — Process Access Rights
 
 
@@ -481,6 +496,7 @@ module Windows {
     // Extern — kernel32.dll (Core Functions)
 
 
+    @[Target("Windows")]
     @[Import(lib: "kernel32.dll")]
     extern {
         // Console
@@ -623,6 +639,7 @@ module Windows {
     // Extern — kernel32.dll (Process, Memory, DLL, Thread, Sync)
 
 
+    @[Target("Windows")]
     @[Import(lib: "kernel32.dll")]
     extern {
         // Process management
