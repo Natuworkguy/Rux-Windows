@@ -1,0 +1,166 @@
+/*
+    Windows API — Psapi.dll (Process Status API)
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+
+    Functions for enumerating processes and modules, and for
+    querying process memory usage and module information.
+
+    References:
+      https://learn.microsoft.com/windows/win32/api/psapi/
+*/
+
+module Windows {
+
+
+    // Structures
+
+
+    pub struct ProcessMemoryCounters {
+        pub cb:                         uint32;
+        pub pageFaultCount:             uint32;
+        pub peakWorkingSetSize:         uint;
+        pub workingSetSize:             uint;
+        pub quotaPeakPagedPoolUsage:    uint;
+        pub quotaPagedPoolUsage:        uint;
+        pub quotaPeakNonPagedPoolUsage: uint;
+        pub quotaNonPagedPoolUsage:     uint;
+        pub pagefileUsage:              uint;
+        pub peakPagefileUsage:          uint;
+    }
+
+    pub struct ModuleInfo {
+        pub baseOfDll:   *opaque;
+        pub sizeOfImage: uint32;
+        pub entryPoint:  *opaque;
+        pub _pad:        uint32;
+    }
+
+    pub struct PerformanceInfo {
+        pub cb:                uint32;
+        pub _pad1:             uint32;
+        pub commitTotal:       uint;
+        pub commitLimit:       uint;
+        pub commitPeak:        uint;
+        pub physicalTotal:     uint;
+        pub physicalAvailable: uint;
+        pub systemCache:       uint;
+        pub kernelTotal:       uint;
+        pub kernelPaged:       uint;
+        pub kernelNonpaged:    uint;
+        pub pageSize:          uint;
+        pub handleCount:       uint32;
+        pub processCount:      uint32;
+        pub threadCount:       uint32;
+    }
+
+
+    // Extern — psapi.dll
+
+
+    @[Import(lib: "psapi.dll")]
+    extern {
+        /// Retrieves the process identifier for each process object in the system
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocesses
+        func EnumProcesses(
+            processIds: *uint32,
+            cb: uint32,
+            bytesReturned: *uint32
+        ) -> bool32;
+
+        /// Retrieves the base name of the specified module
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getmodulebasenamea
+        func GetModuleBaseNameA(
+            hProcess: *opaque,
+            hModule: *opaque,
+            baseName: *char8,
+            size: uint32
+        ) -> uint32;
+
+        /// Retrieves the fully qualified path for the file containing the specified module
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getmodulefilenameexa
+        func GetModuleFileNameExA(
+            hProcess: *opaque,
+            hModule: *opaque,
+            fileName: *char8,
+            nSize: uint32
+        ) -> uint32;
+
+        /// Retrieves information about the memory usage of the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessmemoryinfo
+        func GetProcessMemoryInfo(
+            hProcess: *opaque,
+            counters: *opaque,
+            cb: uint32
+        ) -> bool32;
+
+        /// Retrieves a handle for each module in the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocessmodules
+        func EnumProcessModules(
+            hProcess: *opaque,
+            modules: *opaque,
+            cb: uint32,
+            bytesNeeded: *uint32
+        ) -> bool32;
+
+        /// Retrieves a handle for each module in the specified process, with architecture filtering
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumprocessmodulesex
+        func EnumProcessModulesEx(
+            hProcess: *opaque,
+            modules: *opaque,
+            cb: uint32,
+            bytesNeeded: *uint32,
+            filterFlag: uint32
+        ) -> bool32;
+
+        /// Retrieves information about the specified module in the specified process
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getmoduleinformation
+        func GetModuleInformation(
+            hProcess: *opaque,
+            hModule: *opaque,
+            moduleInfo: *opaque,
+            cb: uint32
+        ) -> bool32;
+
+        /// Retrieves the performance values contained in the PERFORMANCE_INFORMATION structure
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getperformanceinfo
+        func GetPerformanceInfo(
+            performanceInfo: *opaque,
+            cb: uint32
+        ) -> bool32;
+
+        /// Retrieves the load address for each device driver in the system
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-enumdevicedrivers
+        func EnumDeviceDrivers(
+            imageBase: *opaque,
+            cb: uint32,
+            bytesNeeded: *uint32
+        ) -> bool32;
+
+        /// Retrieves the base name of the specified device driver
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getdevicedriverbasenamea
+        func GetDeviceDriverBaseNameA(
+            imageBase: *opaque,
+            baseName: *char8,
+            nSize: uint32
+        ) -> uint32;
+
+        /// Retrieves the path available for the specified device driver
+        /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getdevicedriverfilenamea
+        func GetDeviceDriverFileNameA(
+            imageBase: *opaque,
+            fileName: *char8,
+            nSize: uint32
+        ) -> uint32;
+
+    }
+
+
+    // Constants — EnumProcessModulesEx filter flags
+
+
+    pub const LIST_MODULES_DEFAULT:      uint32 = 0u32;
+    pub const LIST_MODULES_32BIT:        uint32 = 1u32;
+    pub const LIST_MODULES_64BIT:        uint32 = 2u32;
+    pub const LIST_MODULES_ALL:          uint32 = 3u32;
+}

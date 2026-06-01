@@ -1,0 +1,435 @@
+/*
+    Windows API — Windows Hypervisor Platform (WinHvPlatform.dll)
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+*/
+
+module Windows {
+
+
+    // Return code
+
+
+    pub const WHV_OK: uint32 = 0x00000000u32;  // S_OK
+    pub const WHV_E_OBJECT_NOT_FOUND:     uint32 = 0x80370001u32;
+    pub const WHV_E_INVALID_PARAMETER:    uint32 = 0x80370002u32;
+    pub const WHV_E_UNKNOWN_CAPABILITY:   uint32 = 0x80370003u32;
+    pub const WHV_E_INSUFFICIENT_BUFFER:  uint32 = 0x80370004u32;
+
+
+    // Capability Codes — WHvGetCapability
+
+
+    pub const WHvCapabilityCodeHypervisorPresent:   uint32 = 0x00001000u32;
+
+    pub const WHvCapabilityCodeFeatures:            uint32 = 0x00001001u32;
+
+    pub const WHvCapabilityCodeExtendedVmExits:     uint32 = 0x00001002u32;
+
+    pub const WHvCapabilityCodeExceptionExitBitmap: uint32 = 0x00001003u32;
+
+    // Feature bits returned by WHvCapabilityCodeFeatures
+    pub const WHvFeatureLocalApicPassthrough:       uint32 = 0x00000001u32;
+    pub const WHvFeatureRdtscp:                     uint32 = 0x00000002u32;
+    pub const WHvFeatureTscDeadlineTimer:           uint32 = 0x00000004u32;
+
+
+    // Partition Property Codes — WHvGet/SetPartitionProperty
+
+
+    pub const WHvPartitionPropertyCodeProcessorCount:       uint32 = 0x00010001u32;
+
+    pub const WHvPartitionPropertyCodeExtendedVmExits:      uint32 = 0x00010002u32;
+
+    pub const WHvPartitionPropertyCodeExceptionExitBitmap:  uint32 = 0x00010003u32;
+
+    pub const WHvPartitionPropertyCodeSharedMemory:         uint32 = 0x00010004u32;
+
+
+    // Run VP Exit Reasons — returned in WHV_RUN_VP_EXIT_CONTEXT.exitReason
+
+
+    pub const WHvRunVpExitReasonNone:                uint32 = 0x00000000u32;
+    pub const WHvRunVpExitReasonMemoryAccess:        uint32 = 0x00000001u32;
+    pub const WHvRunVpExitReasonX64InterruptWindow:  uint32 = 0x00000002u32;
+    pub const WHvRunVpExitReasonX64Halt:             uint32 = 0x00000003u32;
+    pub const WHvRunVpExitReasonX64IoPortAccess:     uint32 = 0x00000004u32;
+    pub const WHvRunVpExitReasonUnrecoverableException: uint32 = 0x00000005u32;
+    pub const WHvRunVpExitReasonX64MsrAccess:        uint32 = 0x00000006u32;
+    pub const WHvRunVpExitReasonX64Cpuid:            uint32 = 0x00000007u32;
+    pub const WHvRunVpExitReasonException:           uint32 = 0x00000008u32;
+    pub const WHvRunVpExitReasonX64Rdtsc:            uint32 = 0x00000009u32;
+    pub const WHvRunVpExitReasonX64ApicEoi:          uint32 = 0x0000000Au32;
+    pub const WHvRunVpExitReasonSynicSint:           uint32 = 0x0000000Bu32;
+    pub const WHvRunVpExitReasonX64X2Apic:           uint32 = 0x0000000Cu32;
+
+
+    // Memory Access Types — returned in MemoryAccess exit context
+
+
+    pub const WHvMemoryAccessRead:   uint32 = 0x00000000u32;
+    pub const WHvMemoryAccessWrite:  uint32 = 0x00000001u32;
+    pub const WHvMemoryAccessExecute:uint32 = 0x00000002u32;
+
+
+    // MSR Access Types — returned in MsrAccess exit context
+
+
+    pub const WHvX64MsrAccessRead:  uint32 = 0x00000000u32;
+    pub const WHvX64MsrAccessWrite: uint32 = 0x00000001u32;
+
+
+    // Map GPA Range Flags
+
+
+    pub const WHvMapGpaRangeFlagRead:    uint32 = 0x00000001u32;
+    pub const WHvMapGpaRangeFlagWrite:   uint32 = 0x00000002u32;
+    pub const WHvMapGpaRangeFlagExecute: uint32 = 0x00000004u32;
+
+    // All access (read + write + execute)
+    pub const WHvMapGpaRangeFlagAll:     uint32 = 0x00000007u32;
+
+
+    // X64 Exception Types — used with exception exit bitmap
+
+
+    pub const WHvX64ExceptionTypeDivideErrorFault:          uint32 = 0x00u32;
+    pub const WHvX64ExceptionTypeDebugFault:                uint32 = 0x01u32;
+    pub const WHvX64ExceptionTypeBreakpointTrap:            uint32 = 0x03u32;
+    pub const WHvX64ExceptionTypeOverflowTrap:              uint32 = 0x04u32;
+    pub const WHvX64ExceptionTypeBoundRangeFault:           uint32 = 0x05u32;
+    pub const WHvX64ExceptionTypeInvalidOpcodeFault:        uint32 = 0x06u32;
+    pub const WHvX64ExceptionTypeDeviceNotAvailableFault:   uint32 = 0x07u32;
+    pub const WHvX64ExceptionTypeDoubleFault:               uint32 = 0x08u32;
+    pub const WHvX64ExceptionTypeInvalidTssFault:           uint32 = 0x0Au32;
+    pub const WHvX64ExceptionTypeSegmentNotPresentFault:    uint32 = 0x0Bu32;
+    pub const WHvX64ExceptionTypeStackFault:                uint32 = 0x0Cu32;
+    pub const WHvX64ExceptionTypeGeneralProtectionFault:    uint32 = 0x0Du32;
+    pub const WHvX64ExceptionTypePageFault:                 uint32 = 0x0Eu32;
+    pub const WHvX64ExceptionTypeFloatingPointErrorFault:   uint32 = 0x10u32;
+    pub const WHvX64ExceptionTypeAlignmentCheckFault:       uint32 = 0x11u32;
+    pub const WHvX64ExceptionTypeMachineCheck:              uint32 = 0x12u32;
+    pub const WHvX64ExceptionTypeSimdFloatingPointFault:    uint32 = 0x13u32;
+
+
+    // X64 Register Names — WHvGet/SetVirtualProcessorRegisters
+
+
+    pub const WHvX64RegisterRax:    uint32 = 0u32;
+    pub const WHvX64RegisterRcx:    uint32 = 1u32;
+    pub const WHvX64RegisterRdx:    uint32 = 2u32;
+    pub const WHvX64RegisterRbx:    uint32 = 3u32;
+    pub const WHvX64RegisterRsp:    uint32 = 4u32;
+    pub const WHvX64RegisterRbp:    uint32 = 5u32;
+    pub const WHvX64RegisterRsi:    uint32 = 6u32;
+    pub const WHvX64RegisterRdi:    uint32 = 7u32;
+    pub const WHvX64RegisterR8:     uint32 = 8u32;
+    pub const WHvX64RegisterR9:     uint32 = 9u32;
+    pub const WHvX64RegisterR10:    uint32 = 10u32;
+    pub const WHvX64RegisterR11:    uint32 = 11u32;
+    pub const WHvX64RegisterR12:    uint32 = 12u32;
+    pub const WHvX64RegisterR13:    uint32 = 13u32;
+    pub const WHvX64RegisterR14:    uint32 = 14u32;
+    pub const WHvX64RegisterR15:    uint32 = 15u32;
+    pub const WHvX64RegisterRip:    uint32 = 16u32;
+    pub const WHvX64RegisterRflags: uint32 = 17u32;
+    pub const WHvX64RegisterCs:     uint32 = 24u32;
+    pub const WHvX64RegisterDs:     uint32 = 25u32;
+    pub const WHvX64RegisterEs:     uint32 = 26u32;
+    pub const WHvX64RegisterFs:     uint32 = 27u32;
+    pub const WHvX64RegisterGs:     uint32 = 28u32;
+    pub const WHvX64RegisterSs:     uint32 = 29u32;
+    pub const WHvX64RegisterCr0:    uint32 = 36u32;
+    pub const WHvX64RegisterCr2:    uint32 = 37u32;
+    pub const WHvX64RegisterCr3:    uint32 = 38u32;
+    pub const WHvX64RegisterCr4:    uint32 = 39u32;
+    pub const WHvX64RegisterDr0:    uint32 = 44u32;
+    pub const WHvX64RegisterDr1:    uint32 = 45u32;
+    pub const WHvX64RegisterDr2:    uint32 = 46u32;
+    pub const WHvX64RegisterDr3:    uint32 = 47u32;
+    pub const WHvX64RegisterDr6:    uint32 = 48u32;
+    pub const WHvX64RegisterDr7:    uint32 = 49u32;
+
+
+    // Structures
+
+
+    pub struct WHvCapability {
+        pub code:   uint32;
+        pub result: uint32;
+        pub data:   uint64;
+    }
+
+    pub struct WHvRegisterValue {
+        pub reg64:  uint64;
+    }
+
+    pub struct WHvRunVpExitContext {
+        pub exitReason: uint32;
+        pub _pad1:      uint32;
+        pub vpIndex:    uint32;
+        pub _pad2:      uint32;
+    }
+
+    pub struct WHvMemoryAccessExitContext {
+        pub exitReason: uint32;
+        pub _pad1:      uint32;
+        pub vpIndex:    uint32;
+        pub _pad2:      uint32;
+        pub accessType: uint32;
+        pub _pad3:      uint32;
+        pub gpa:        uint64;
+        pub gva:        uint64;
+        pub byteCount:  uint32;
+        pub _pad4:      uint32;
+    }
+
+    pub struct WHvX64MsrAccessExitContext {
+        pub exitReason: uint32;
+        pub _pad1:      uint32;
+        pub vpIndex:    uint32;
+        pub _pad2:      uint32;
+        pub accessType: uint32;
+        pub _pad3:      uint32;
+        pub msrNumber:  uint32;
+        pub _pad4:      uint32;
+        pub msrValue:   uint64;
+    }
+
+    pub struct WHvX64CpuidExitContext {
+        pub exitReason:       uint32;
+        pub _pad1:            uint32;
+        pub vpIndex:          uint32;
+        pub _pad2:            uint32;
+        pub rax:              uint64;
+        pub rcx:              uint64;
+        pub rdx:              uint64;
+        pub rbx:              uint64;
+        pub defaultResultRax: uint64;
+        pub defaultResultRcx: uint64;
+        pub defaultResultRdx: uint64;
+        pub defaultResultRbx: uint64;
+    }
+
+    pub struct WHvX64IoPortAccessExitContext {
+        pub exitReason: uint32;
+        pub _pad1:      uint32;
+        pub vpIndex:    uint32;
+        pub _pad2:      uint32;
+        pub portNumber: uint32;
+        pub accessType: uint32;
+        pub data:       uint32;
+        pub byteCount:  uint32;
+        pub _pad3:      uint32;
+        pub rax:        uint64;
+    }
+
+    pub struct WHvExceptionExitContext {
+        pub exitReason:    uint32;
+        pub _pad1:         uint32;
+        pub vpIndex:       uint32;
+        pub _pad2:         uint32;
+        pub exceptionType: uint32;
+        pub _pad3:         uint32;
+        pub errorCode:     uint32;
+        pub _pad4:         uint32;
+    }
+
+
+    // Interrupt Controller
+
+
+    pub struct WHvInterruptControl {
+        pub interruptType:  uint32;
+        pub _pad1:          uint32;
+        pub vector:         uint32;
+        pub _pad2:          uint32;
+        pub destination:    uint64;
+    }
+
+
+    // GVA Translation
+
+
+    pub const WHvTranslateGvaFlagValidateRead:  uint32 = 0x00000001u32;
+    pub const WHvTranslateGvaFlagValidateWrite: uint32 = 0x00000002u32;
+    pub const WHvTranslateGvaFlagValidateExecute:uint32= 0x00000004u32;
+
+    pub struct WHvTranslateGvaResult {
+        pub resultCode:  uint32;
+        pub gpaIsValid:  uint32;
+    }
+
+    pub const WHvTranslateGvaResultSuccess:               uint32 = 0x00000000u32;
+    pub const WHvTranslateGvaResultPageNotPresent:        uint32 = 0x00000001u32;
+    pub const WHvTranslateGvaResultPrivilegeViolation:    uint32 = 0x00000002u32;
+    pub const WHvTranslateGvaResultInvalidPageTableFlags: uint32 = 0x00000003u32;
+
+    pub const WHvX64InterruptTypeFixed:         uint32 = 0x00000000u32;
+    pub const WHvX64InterruptTypeLowPriority:   uint32 = 0x00000001u32;
+    pub const WHvX64InterruptTypeSmi:           uint32 = 0x00000002u32;
+    pub const WHvX64InterruptTypeNmi:           uint32 = 0x00000004u32;
+    pub const WHvX64InterruptTypeInit:          uint32 = 0x00000005u32;
+    pub const WHvX64InterruptTypeSipi:          uint32 = 0x00000006u32;
+    pub const WHvX64InterruptTypePlatform:      uint32 = 0x00000007u32;
+
+
+    // Extern — WinHvPlatform.dll
+
+
+    @[Import(lib: "WinHvPlatform.dll")]
+    extern {
+        /// Queries the capabilities of the hypervisor partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetcapability
+        func WHvGetCapability(
+            capabilityCode: uint32,
+            capabilityBuffer: *opaque,
+            capabilityBufferSize: uint32
+        ) -> uint32;
+
+        /// Creates a new partition object
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcreatepartition
+        func WHvCreatePartition(partition: *opaque) -> uint32;
+
+        /// Deletes a partition object
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvdeletepartition
+        func WHvDeletePartition(partition: *opaque) -> uint32;
+
+        /// Completes the creation of a partition and makes it ready for use
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvsetuppartition
+        func WHvSetupPartition(partition: *opaque) -> uint32;
+
+        /// Maps a range of a partition's guest physical address space to a specified host virtual address space range
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvmapgparange
+        func WHvMapGpaRange(
+            partition: *opaque,
+            sourceAddress: *opaque,
+            gpa: uint64,
+            byteCount: uint64,
+            flags: uint32
+        ) -> uint32;
+
+        /// Unmaps a previously mapped GPA range from the partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvunmapgparange
+        func WHvUnmapGpaRange(
+            partition: *opaque,
+            gpa: uint64,
+            byteCount: uint64
+        ) -> uint32;
+
+        /// Creates a virtual processor in a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcreatevirtualprocessor
+        func WHvCreateVirtualProcessor(
+            partition: *opaque,
+            vpIndex: uint32,
+            flags: uint32
+        ) -> uint32;
+
+        /// Deletes a virtual processor in a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvdeletevirtualprocessor
+        func WHvDeleteVirtualProcessor(
+            partition: *opaque,
+            vpIndex: uint32
+        ) -> uint32;
+
+        /// Runs the virtual processor and returns when the processor exits
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvrunvirtualprocessor
+        func WHvRunVirtualProcessor(
+            partition: *opaque,
+            vpIndex: uint32,
+            exitContext: *opaque,
+            exitContextSize: uint32
+        ) -> uint32;
+
+        /// Requests the cancellation of a currently executing virtual processor run
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcancelrunvirtualprocessor
+        func WHvCancelRunVirtualProcessor(
+            partition: *opaque,
+            vpIndex: uint32
+        ) -> uint32;
+
+        /// Retrieves the value of a list of registers from a virtual processor
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetvirtualprocessorregisters
+        func WHvGetVirtualProcessorRegisters(
+            partition: *opaque,
+            vpIndex: uint32,
+            registerNames: *uint32,
+            registerValues: *opaque,
+            registerCount: uint32
+        ) -> uint32;
+
+        /// Sets the value of a list of registers in a virtual processor
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvsetvirtualprocessorregisters
+        func WHvSetVirtualProcessorRegisters(
+            partition: *opaque,
+            vpIndex: uint32,
+            registerNames: *uint32,
+            registerValues: *opaque,
+            registerCount: uint32
+        ) -> uint32;
+
+        /// Retrieves a property of a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetpartitionproperty
+        func WHvGetPartitionProperty(
+            partition: *opaque,
+            propertyCode: uint32,
+            propertyBuffer: *opaque,
+            propertyBufferSize: uint32,
+            resultSize: *uint32
+        ) -> uint32;
+
+        /// Sets a property of a partition
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvsetpartitionproperty
+        func WHvSetPartitionProperty(
+            partition: *opaque,
+            propertyCode: uint32,
+            propertyBuffer: *opaque,
+            propertyBufferSize: uint32
+        ) -> uint32;
+
+        /// Requests an interrupt to be injected into a virtual processor
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvrequestinterrupt
+        func WHvRequestInterrupt(
+            partition: *opaque,
+            interruptControl: *opaque,
+            controlSize: uint32
+        ) -> uint32;
+
+        /// Translates a guest virtual address to a guest physical address
+        /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvtranslategva
+        func WHvTranslateGva(
+            partition: *opaque,
+            vpIndex: uint32,
+            gva: uint64,
+            flags: uint32,
+            result: *opaque,
+            gpa: *uint64
+        ) -> uint32;
+    }
+
+
+    // Convenience helpers
+
+
+    /// Returns true if the Windows Hypervisor Platform API is available on this system
+    /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvgetcapability
+    pub func IsWhpAvailable() -> bool {
+        var present: uint32 = 0u32;
+        let ret = WHvGetCapability(
+            WHvCapabilityCodeHypervisorPresent,
+            &present as *opaque,
+            4u32
+        );
+        if ret != WHV_OK { return false; }
+        return present != 0u32;
+    }
+
+    /// Creates and sets up a new hypervisor partition ready for virtual processor creation
+    /// https://learn.microsoft.com/en-us/virtualization/api/hypervisor-platform/funcs/whvcreatepartition
+    pub func CreatePartition() -> *opaque {
+        var partition: *opaque = null;
+        let _ = WHvCreatePartition(&partition as *opaque);
+        return partition;
+    }
+
+}

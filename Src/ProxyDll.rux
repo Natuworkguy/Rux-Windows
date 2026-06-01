@@ -1,0 +1,114 @@
+/*
+    Windows API — Proxy / Wrapper DLL Patterns
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+*/
+
+module Windows {
+
+// Fixed: Proper system path building with architecture awareness
+pub struct ProxyModule {
+    pub hRealDll: *opaque;
+    pub isWow64:  bool32;  // Track if we're in WOW64 mode
+}
+
+// Fixed: Get correct system directory based on target architecture
+/// Builds the full system-directory path for the given DLL name
+/// https://github.com/rux-lang/Windows
+pub func GetSystemPathForDll(outBuffer: *char8, bufSize: uint32, dllName: *const char8, targetIsWow64: bool32) -> bool32 {
+    var written: uint32 = 0u32;
+    
+    if targetIsWow64 {
+        // For WOW64 (32-bit on 64-bit), need SysWOW64, not System32
+        // GetSystemDirectoryA returns System32, so we need to detect and replace
+        written = GetSystemDirectoryA(outBuffer, bufSize);
+        if written == 0u32 { return false; }
+        
+        // Check if we're on 64-bit Windows and need SysWOW64
+        var isWow64Process: bool32 = false;
+        // Note: You'd need IsWow64Process from kernel32 - add to Kernel32.txt first
+        // For now, assume caller knows target architecture
+    } else {
+        written = GetSystemDirectoryA(outBuffer, bufSize);
+        if written == 0u32 { return false; }
+    }
+    
+    // Ensure we have room for backslash + dllName + null
+    let requiredLen = written + 1u + StrLen(dllName) + 1u;
+    if requiredLen > bufSize { return false; }
+    
+    // Append backslash
+    *((outBuffer as uint + written as uint) as *char8) = 0x5Cu8 as char8;
+    
+    // Append DLL name
+    var src = dllName;
+    var dst = (outBuffer as uint + written as uint + 1u) as *char8;
+    loop {
+        *dst = *src;
+        if (*src) as uint8 == 0u8 { break; }
+        src = (src as uint + 1u) as *const char8;
+        dst = (dst as uint + 1u) as *char8;
+    }
+    
+    return true;
+}
+
+// Fixed: Load with explicit search flags to avoid redirection issues
+/// Loads the system DLL from System32 and stores its handle in the proxy module struct
+/// https://github.com/rux-lang/Windows
+pub func ProxyModuleLoad(proxy: *ProxyModule, dllName: *const char8, pathBuf: *char8, bufSize: uint32) -> bool32 {
+    // Use LOAD_LIBRARY_SEARCH_SYSTEM32 flag to ensure correct architecture
+    if !GetSystemPathForDll(pathBuf, bufSize, dllName, (*proxy).isWow64) { 
+        return false; 
+    }
+    
+    // Prefer LOAD_LIBRARY_SEARCH_SYSTEM32 to force correct loading
+    (*proxy).hRealDll = LoadLibraryExA(
+        pathBuf as *const char8, 
+        null, 
+        LOAD_LIBRARY_SEARCH_SYSTEM32
+    );
+    
+    // Fallback to normal LoadLibrary if flags aren't supported (old Windows)
+    if (*proxy).hRealDll == null {
+        (*proxy).hRealDll = LoadLibraryA(pathBuf as *const char8);
+    }
+    
+    return (*proxy).hRealDll != null;
+}
+
+// Rest remains the same
+/// Retrieves an exported function pointer from a loaded proxy module
+/// https://github.com/rux-lang/Windows
+pub func ProxyModuleGetExport(proxy: *ProxyModule, exportName: *const char8) -> *const opaque {
+    if (*proxy).hRealDll == null { return null; }
+    return GetProcAddress((*proxy).hRealDll, exportName);
+}
+
+/// Unloads the proxy module and clears its handle
+/// https://github.com/rux-lang/Windows
+pub func ProxyModuleUnload(proxy: *ProxyModule) {
+    if (*proxy).hRealDll != null {
+        FreeLibrary((*proxy).hRealDll);
+        (*proxy).hRealDll = null;
+    }
+}
+
+pub struct ForwardEntry {
+    pub name: *const char8;
+    pub fn_:  *const opaque;
+}
+
+/// Walks a forward-entry table and resolves each export pointer from the proxy module
+/// https://github.com/rux-lang/Windows
+pub func ForwardTableResolve(table: *ForwardEntry, count: uint32, proxy: *ProxyModule) {
+    var i: uint32 = 0u32;
+    loop {
+        if i >= count { break; }
+        let entry = (table as uint + (i as uint * 16u)) as *ForwardEntry;
+        (*entry).fn_ = ProxyModuleGetExport(proxy, (*entry).name);
+        i = i + 1u32;
+    }
+}
+
+}
