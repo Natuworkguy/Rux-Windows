@@ -1,31 +1,23 @@
 # Windows
 
-Windows API bindings for [Rux](https://rux-lang.dev).All functions follow the official [Microsoft Win32 documentation](https://learn.microsoft.com/en-us/windows/win32/api/).
+Windows API bindings for [Rux](https://rux-lang.dev). All functions follow the official [Microsoft Win32 documentation](https://learn.microsoft.com/en-us/windows/win32/api/).
 
-## Install
+## Installation
+
+Add `Windows` to your `Rux.toml`:
 
 ```toml
 [Dependencies]
-Windows = "0.2.1"
+Windows = "0.1.0"
 ```
 
-## Modules
+## Overview
 
-| File | What |
-|------|------|
-| `Kernel32.rux` | kernel32.dll — processes, memory, threads, DLLs, sync, console, heap |
-| `Pe.rux` | PE/COFF structs (DOS header, NT headers, IAT, EAT, sections) |
-| `Process.rux` | Process enumeration, DLL injection, memory read/write |
-| `Hook.rux` | IAT and inline (trampoline) function hooking |
-| `ProxyDll.rux` | Proxy DLL pattern — forwarding to the real DLL |
-| `Advapi32.rux` | advapi32.dll — registry, services, security, LSA |
-| `DbgHelp.rux` | dbghelp.dll — minidumps, stack walking, symbols |
-| `Gdi32.rux` | gdi32.dll — bitmap, font, DC, region |
-| `NtDll.rux` | ntdll.dll — NT API (process, system, memory info) |
-| `Psapi.rux` | psapi.dll — process/device driver enumeration |
-| `User32.rux` | user32.dll — windows, messages, controls, input |
-| `WinHvPlatform.rux` | WinHvPlatform.dll — Hyper-V whpx |
-| `Ws2_32.rux` | ws2_32.dll — sockets (Winsock 2) |
+| Module     | Library        | Category                          |
+| ---------- | -------------- | --------------------------------- |
+| `Kernel32` | `kernel32.dll` | Memory, Console, Process, Strings |
+
+## API Reference
 
 ### Memory Management
 
@@ -79,22 +71,24 @@ Functions for allocating and writing to a console.
 | ---------------- | --------------------------------------------------- |
 | `GetLastError()` | Retrieves the last-error code of the calling thread |
 
-
-## Example
+## Usage Example
 
 ```rux
-import Windows::*;
+import Windows;
 
 func Main() -> int {
+    // Allocate memory from the process heap
     let heap = GetProcessHeap();
-    let mem  = HeapAlloc(heap, 0u32, 1024u);
-    RtlZeroMemory(mem, 1024u);
+    let mem  = HeapAlloc(heap, 0, 1024);
+    RtlZeroMemory(mem, 1024);
 
-    let stdout = GetStdHandle(StdHandle::Output as uint32);
-    var written: uint32 = 0u32;
-    WriteConsoleA(stdout, "Hello, Windows!\n\0", 16u32, &written, null);
-
-    HeapFree(heap, 0u32, mem);
+    // Write to console
+    let stdout = GetStdHandle(0xFFFFFFF5);
+    let msg    = "Hello, Windows!\n";
+    let written: uint32 = 0;
+    WriteConsoleA(stdout, msg.data, msg.length as uint32, &written, null);
+    HeapFree(heap, 0, mem);
+    ExitProcess(0);
     return 0;
 }
 ```
