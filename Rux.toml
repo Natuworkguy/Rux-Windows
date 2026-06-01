@@ -1,6 +1,6 @@
 [Package]
 Name = "Windows"
-Version = "0.1.3"
+Version = "0.1.4"
 Type = "Source"
 Description = "Windows API"
 Authors = ["Rux Contributors <info@rux-lang.dev>"]

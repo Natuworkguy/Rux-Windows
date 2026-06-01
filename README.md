@@ -1,6 +1,10 @@
 # Windows
 
-Windows API bindings for [Rux](https://rux-lang.dev). All functions follow the official [Microsoft Win32 documentation](https://learn.microsoft.com/en-us/windows/win32/api/).
+Windows API bindings for Rux.
+
+The `Windows` package provides direct access to selected Win32 APIs from `kernel32.dll`, including memory management, console I/O, file operations, process information, directory enumeration, string conversion, dynamic library loading, and system time functions.
+
+All functions closely follow the official Microsoft Win32 API documentation.
 
 ## Installation
 
@@ -8,87 +12,172 @@ Add `Windows` to your `Rux.toml`:
 
 ```toml
 [Dependencies]
-Windows = "0.1.0"
+Windows = "0.1.4"
 ```
 
-## Overview
+## Features
 
-| Module     | Library        | Category                          |
-| ---------- | -------------- | --------------------------------- |
-| `Kernel32` | `kernel32.dll` | Memory, Console, Process, Strings |
+| Category          | APIs                                                                           |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Memory Management | HeapAlloc, HeapReAlloc, HeapFree, GetProcessHeap                               |
+| Memory Operations | RtlCopyMemory, RtlFillMemory, RtlZeroMemory, RtlCompareMemory                  |
+| Console I/O       | AllocConsole, GetStdHandle, ReadConsoleA, WriteConsoleA, WriteConsoleW, Beep   |
+| String Conversion | MultiByteToWideChar, WideCharToMultiByte                                       |
+| Process & Thread  | ExitProcess, Sleep, GetCurrentProcessId, GetCurrentThreadId                    |
+| System Time       | GetTickCount64, GetLocalTime, GetSystemTime                                    |
+| File I/O          | CreateFileA, ReadFile, WriteFile, GetFileSizeEx, SetFilePointerEx, CloseHandle |
+| Filesystem        | DeleteFileA, CopyFileA, MoveFileA, CreateDirectoryA, RemoveDirectoryA          |
+| Directories       | GetCurrentDirectoryA, SetCurrentDirectoryA                                     |
+| File Enumeration  | FindFirstFileA, FindNextFileA, FindClose                                       |
+| Dynamic Libraries | LoadLibraryA, FreeLibrary, GetProcAddress                                      |
+| Error Handling    | GetLastError                                                                   |
 
-## API Reference
+## Types
 
-### Memory Management
+The package also exposes several Win32 structures and enums:
 
-Functions for heap-based memory allocation.
+### Structures
 
-| Function           | Description                                                 |
-| ------------------ | ----------------------------------------------------------- |
-| `GetProcessHeap()` | Returns a handle to the default heap of the calling process |
-| `HeapAlloc()`      | Allocates a block of memory from a specified heap           |
-| `HeapReAlloc()`    | Reallocates a block of memory from a heap                   |
-| `HeapFree()`       | Frees a memory block allocated from a heap                  |
+* FileTime
+* SystemTime
+* Win32FindDataA
 
-### Memory Operations
+### Enums
 
-Low-level memory utility routines (RTL).
+* StdHandle
+* CodePage
+* FileAccess
+* FileShare
+* CreationDisposition
+* FileAttributes
+* SeekOrigin
 
-| Function          | Description                                    |
-| ----------------- | ---------------------------------------------- |
-| `RtlFillMemory()` | Fills a block of memory with a specified value |
-| `RtlZeroMemory()` | Fills a block of memory with zeros             |
-| `RtlCopyMemory()` | Copies a block of memory to another location   |
+### Constants
 
-### Console I/O
+* INVALID_HANDLE_VALUE
 
-Functions for allocating and writing to a console.
+## Naming Convention
 
-| Function          | Description                                                     |
-| ----------------- | --------------------------------------------------------------- |
-| `AllocConsole()`  | Allocates a new console for the calling process                 |
-| `GetStdHandle()`  | Retrieves a handle to a standard device (stdin, stdout, stderr) |
-| `WriteConsoleA()` | Writes a string of ANSI characters to the console               |
-| `WriteConsoleW()` | Writes a string of UTF-16 characters to the console             |
-| `Beep()`          | Generates a tone on the system speaker                          |
+Functions ending with `A` use ANSI (char8) strings.
 
-### String Conversion
+Functions ending with `W` use UTF-16 (char16) strings.
 
-| Function                | Description                                               |
-| ----------------------- | --------------------------------------------------------- |
-| `MultiByteToWideChar()` | Converts a multi-byte ANSI string to a UTF-16 wide string |
+Examples:
 
-### Process & Thread Control
+* `CreateFileA`
+* `WriteConsoleA`
+* `WriteConsoleW`
 
-| Function        | Description                                        |
-| --------------- | -------------------------------------------------- |
-| `Sleep()`       | Suspends the execution of the current thread       |
-| `ExitProcess()` | Terminates the calling process and all its threads |
+---
 
-### Error Handling
-
-| Function         | Description                                         |
-| ---------------- | --------------------------------------------------- |
-| `GetLastError()` | Retrieves the last-error code of the calling thread |
-
-## Usage Example
+# Example: Console Output
 
 ```rux
-import Windows;
+import Windows::*;
 
 func Main() -> int {
-    // Allocate memory from the process heap
-    let heap = GetProcessHeap();
-    let mem  = HeapAlloc(heap, 0, 1024);
-    RtlZeroMemory(mem, 1024);
+    AllocConsole();
 
-    // Write to console
-    let stdout = GetStdHandle(0xFFFFFFF5);
-    let msg    = "Hello, Windows!\n";
+    let stdout = GetStdHandle(StdHandle.Output);
+
+    let message = "Hello from Win32!\n";
+
     let written: uint32 = 0;
-    WriteConsoleA(stdout, msg.data, msg.length as uint32, &written, null);
-    HeapFree(heap, 0, mem);
-    ExitProcess(0);
+
+    WriteConsoleA(
+        stdout,
+        message.data,
+        message.length as uint32,
+        &written,
+        null
+    );
+
+    return 0;
+}
+```
+
+---
+
+# Example: Heap Allocation
+
+```rux
+import Windows::*;
+
+func Main() -> int {
+    let heap = GetProcessHeap();
+
+    let buffer = HeapAlloc(heap, 0, 1024);
+
+    if (buffer == null)
+        return 1;
+
+    RtlZeroMemory(buffer, 1024);
+
+    HeapFree(heap, 0, buffer);
+
+    return 0;
+}
+```
+
+---
+
+# Example: Create and Write a File
+
+```rux
+import Windows::*;
+
+func Main() -> int {
+    let file = CreateFileA(
+        "example.txt".data,
+        FileAccess.Write,
+        FileShare.None,
+        null,
+        CreationDisposition.CreateAlways,
+        FileAttributes.Normal,
+        null
+    );
+
+    if (file == INVALID_HANDLE_VALUE)
+        return 1;
+
+    let text = "Hello, Windows File API!\n";
+
+    let written: uint32 = 0;
+
+    WriteFile(
+        file,
+        text.data,
+        text.length as uint32,
+        &written,
+        null
+    );
+
+    CloseHandle(file);
+
+    return 0;
+}
+```
+
+---
+
+# Example: Load a DLL
+
+```rux
+import Windows::*;
+
+func Main() -> int {
+    let kernel32 = LoadLibraryA("kernel32.dll".data);
+
+    if (kernel32 == null)
+        return 1;
+
+    let proc = GetProcAddress(
+        kernel32,
+        "GetTickCount64".data
+    );
+
+    FreeLibrary(kernel32);
+
     return 0;
 }
 ```
