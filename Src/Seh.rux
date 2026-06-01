@@ -1,0 +1,305 @@
+/*
+    Windows API — Structured Exception Handling (SEH)
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+
+    SEH is Windows' mechanism for catching hardware and software exceptions
+    (access violations, division by zero, stack overflow, etc.) at runtime.
+    It underlies C++ exceptions, __try/__except/__finally, and VEH/VCH.
+
+    Two layers are exposed here:
+      1. Vectored Exception Handlers (VEH / VCH) — registered globally,
+         called before frame-based handlers, easy to add/remove at runtime.
+      2. RtlUnwind / RtlCaptureContext — low-level unwinding primitives
+         for building custom exception dispatch.
+
+    References:
+      https://learn.microsoft.com/windows/win32/debug/structured-exception-handling
+      https://learn.microsoft.com/windows/win32/debug/vectored-exception-handling
+      https://learn.microsoft.com/windows/win32/api/winnt/ns-winnt-exception_record
+      https://learn.microsoft.com/windows/win32/api/winnt/ns-winnt-context
+*/
+
+module Windows {
+
+
+    // ── Exception codes ───────────────────────────────────────────────────────
+
+    /// Access violation (null deref, bad pointer, DEP violation).
+    pub const EXCEPTION_ACCESS_VIOLATION:       uint32 = 0xC0000005u32;
+    /// Array index or pointer out of bounds.
+    pub const EXCEPTION_ARRAY_BOUNDS_EXCEEDED:  uint32 = 0xC000008Cu32;
+    /// Breakpoint hit (INT 3).
+    pub const EXCEPTION_BREAKPOINT:             uint32 = 0x80000003u32;
+    /// Integer division by zero.
+    pub const EXCEPTION_INT_DIVIDE_BY_ZERO:     uint32 = 0xC0000094u32;
+    /// Integer overflow (INTO instruction).
+    pub const EXCEPTION_INT_OVERFLOW:           uint32 = 0xC0000095u32;
+    /// FP division by zero.
+    pub const EXCEPTION_FLT_DIVIDE_BY_ZERO:     uint32 = 0xC000008Eu32;
+    /// FP overflow.
+    pub const EXCEPTION_FLT_OVERFLOW:           uint32 = 0xC0000091u32;
+    /// FP underflow.
+    pub const EXCEPTION_FLT_UNDERFLOW:          uint32 = 0xC0000093u32;
+    /// FP invalid operation.
+    pub const EXCEPTION_FLT_INVALID_OPERATION:  uint32 = 0xC0000090u32;
+    /// Illegal instruction (UD2, etc.).
+    pub const EXCEPTION_ILLEGAL_INSTRUCTION:    uint32 = 0xC000001Du32;
+    /// Stack exhausted.
+    pub const EXCEPTION_STACK_OVERFLOW:         uint32 = 0xC00000FDu32;
+    /// Guard page accessed.
+    pub const EXCEPTION_GUARD_PAGE:             uint32 = 0x80000001u32;
+    /// Single-step / hardware breakpoint.
+    pub const EXCEPTION_SINGLE_STEP:            uint32 = 0x80000004u32;
+    /// C++ exception (thrown by the MSVC runtime).
+    pub const EXCEPTION_CPP_EH:                 uint32 = 0xE06D7363u32;
+    /// Pure virtual function called.
+    pub const EXCEPTION_PURE_VIRTUAL_CALL:      uint32 = 0xC0000025u32;
+
+    /// Returned from a VEH to continue executing at the faulting instruction.
+    pub const EXCEPTION_CONTINUE_EXECUTION:     int32  = -1i32;
+    /// Returned from a VEH to pass control to the next handler.
+    pub const EXCEPTION_CONTINUE_SEARCH:        int32  =  0i32;
+    /// Execute the __except block (frame-based SEH only).
+    pub const EXCEPTION_EXECUTE_HANDLER:        int32  =  1i32;
+
+    /// ExceptionFlags value when this is a non-continuable exception.
+    pub const EXCEPTION_NONCONTINUABLE:         uint32 = 0x00000001u32;
+    /// ExceptionFlags value when unwinding is in progress.
+    pub const EXCEPTION_UNWINDING:              uint32 = 0x00000002u32;
+
+
+    // ── EXCEPTION_RECORD — describes a thrown exception ───────────────────────
+
+    /// Describes a single exception. The ExceptionRecord field may chain to
+    /// a nested exception (e.g. an exception that occurred while handling another).
+    ///
+    /// https://learn.microsoft.com/windows/win32/api/winnt/ns-winnt-exception_record
+    pub struct ExceptionRecord {
+        /// Exception code (EXCEPTION_ACCESS_VIOLATION, etc.)
+        pub exceptionCode:        uint32;
+        /// EXCEPTION_NONCONTINUABLE or EXCEPTION_UNWINDING.
+        pub exceptionFlags:       uint32;
+        /// Pointer to a nested ExceptionRecord, or null.
+        pub exceptionRecord:      *opaque;
+        /// Address where the exception occurred.
+        pub exceptionAddress:     *opaque;
+        /// Number of entries in exceptionInformation (0–15).
+        pub numberParameters:     uint32;
+        /// Extra info: for ACCESS_VIOLATION, [0] = 0 (read) or 1 (write),
+        /// [1] = faulting address.
+        pub exceptionInformation0: uint;
+        pub exceptionInformation1: uint;
+        pub exceptionInformation2: uint;
+        pub exceptionInformation3: uint;
+        pub exceptionInformation4: uint;
+        pub exceptionInformation5: uint;
+        pub exceptionInformation6: uint;
+        pub exceptionInformation7: uint;
+        pub exceptionInformation8: uint;
+        pub exceptionInformation9: uint;
+        pub exceptionInformationA: uint;
+        pub exceptionInformationB: uint;
+        pub exceptionInformationC: uint;
+        pub exceptionInformationD: uint;
+        pub exceptionInformationE: uint;
+    }
+
+    /// EXCEPTION_POINTERS — passed to a VEH or UnhandledExceptionFilter.
+    /// Contains both the exception record and the CPU context at fault time.
+    ///
+    /// https://learn.microsoft.com/windows/win32/api/winnt/ns-winnt-exception_pointers
+    pub struct ExceptionPointers {
+        /// The exception that was raised.
+        pub exceptionRecord: *ExceptionRecord;
+        /// The CPU register state at the point of the exception.
+        /// On x64 this is a CONTEXT structure (1232 bytes). Cast to *opaque
+        /// and pass to RtlCaptureContext / GetThreadContext as needed.
+        pub contextRecord:   *opaque;
+    }
+
+
+    // ── Vectored Exception / Continue Handlers ────────────────────────────────
+    //
+    // VEH handlers are called system-wide before frame-based SEH.
+    // VCH handlers are called after frame-based SEH, as a last resort.
+    //
+    // Handler signature (implement as a Rux func with this type):
+    //   func MyHandler(info: *ExceptionPointers) -> int32
+    // Return EXCEPTION_CONTINUE_EXECUTION to resume, EXCEPTION_CONTINUE_SEARCH
+    // to pass to the next handler.
+
+
+    @[Import(lib: "kernel32.dll")]
+    extern {
+        /// Registers a vectored exception handler.
+        ///
+        /// # Parameters
+        /// - `first`   — non-zero to add at front of VEH list (called first),
+        ///               zero to add at back (called last)
+        /// - `handler` — pointer to your handler function
+        ///
+        /// Returns an opaque handle; pass to RemoveVectoredExceptionHandler to unregister.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler
+        func AddVectoredExceptionHandler(
+            first:   uint32,
+            handler: *const opaque
+        ) -> *opaque;
+
+        /// Removes a previously registered VEH.
+        /// Returns non-zero on success.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler
+        func RemoveVectoredExceptionHandler(handler: *opaque) -> uint32;
+
+        /// Registers a vectored continue handler (called after SEH, before unhandled crash).
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler
+        func AddVectoredContinueHandler(
+            first:   uint32,
+            handler: *const opaque
+        ) -> *opaque;
+
+        /// Removes a previously registered VCH.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler
+        func RemoveVectoredContinueHandler(handler: *opaque) -> uint32;
+
+        /// Sets the unhandled exception filter — called as the last resort
+        /// before the process crashes and Windows shows the error dialog.
+        /// Return EXCEPTION_EXECUTE_HANDLER to suppress the crash dialog,
+        /// EXCEPTION_CONTINUE_SEARCH to let Windows handle it.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-setunhandledexceptionfilter
+        func SetUnhandledExceptionFilter(
+            topLevelExceptionFilter: *const opaque
+        ) -> *const opaque;
+
+        /// Raises an exception in the calling thread.
+        /// Does not return if the exception is non-continuable.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-raiseexception
+        func RaiseException(
+            exceptionCode:    uint32,
+            exceptionFlags:   uint32,
+            numberOfArguments: uint32,
+            arguments:        *const uint
+        );
+
+        /// Returns the error code set by the last failing Win32 API call
+        /// in the calling thread. Equivalent to errno on POSIX.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+        func GetLastError() -> uint32;
+
+        /// Sets the last-error code for the calling thread.
+        /// Useful when writing a function that must preserve the last error.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/errhandlingapi/nf-errhandlingapi-setlasterror
+        func SetLastError(errCode: uint32);
+    }
+
+
+    // ── Low-level unwinding ───────────────────────────────────────────────────
+
+    @[Import(lib: "ntdll.dll")]
+    extern {
+        /// Captures the current CPU register state into a CONTEXT block.
+        /// The CONTEXT must be 16-byte aligned. On x64, CONTEXT is 1232 bytes.
+        /// Pass a *opaque pointing to a suitably aligned, suitably sized buffer.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/winnt/nf-winnt-rtlcapturecontext
+        func RtlCaptureContext(contextRecord: *opaque);
+
+        /// Initiates an unwind through the call stack, calling __finally blocks.
+        /// Used internally by the C runtime for exception propagation.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/winnt/nf-winnt-rtlunwind
+        func RtlUnwind(
+            targetFrame:  *opaque,
+            targetIp:     *opaque,
+            exceptionRecord: *ExceptionRecord,
+            returnValue:  *opaque
+        );
+
+        /// x64 version of RtlUnwind — required on AMD64.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/winnt/nf-winnt-rtlunwindex
+        func RtlUnwindEx(
+            targetFrame:     *opaque,
+            targetIp:        *opaque,
+            exceptionRecord: *ExceptionRecord,
+            returnValue:     *opaque,
+            contextRecord:   *opaque,
+            historyTable:    *opaque
+        );
+
+        /// Walks the exception handler table to find the handler for a given PC.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/winnt/nf-winnt-rtllookupfunctionentry
+        func RtlLookupFunctionEntry(
+            controlPc:    uint,
+            imageBase:    *uint,
+            historyTable: *opaque
+        ) -> *opaque;
+
+        /// Maps a program counter value back to the module that contains it.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/winnt/nf-winnt-rtlpctofileheader
+        func RtlPcToFileHeader(
+            pcValue:      *opaque,
+            baseOfImage:  **opaque
+        ) -> *opaque;
+    }
+
+
+    // ── Debug / crash helpers ─────────────────────────────────────────────────
+
+    @[Import(lib: "kernel32.dll")]
+    extern {
+        /// Sends a string to the debugger (visible in debugger output windows).
+        /// Safe to call from any context; silently ignored if no debugger attached.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/debugapi/nf-debugapi-outputdebugstringa
+        func OutputDebugStringA(outputString: *const char8);
+
+        /// Returns true if a user-mode debugger is attached to the current process.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/debugapi/nf-debugapi-isdebuggerpresent
+        func IsDebuggerPresent() -> bool32;
+
+        /// Causes a breakpoint exception (INT 3) in the current process.
+        /// Use inside VEH handlers or when you want to break into the debugger.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/debugapi/nf-debugapi-debugbreak
+        func DebugBreak();
+
+        /// Raises EXCEPTION_BREAKPOINT in the target process.
+        ///
+        /// https://learn.microsoft.com/windows/win32/api/debugapi/nf-debugapi-debugbreakprocess
+        func DebugBreakProcess(process: *opaque) -> bool32;
+
+        /// Writes a minidump (crash dump) to a file — requires DbgHelp.dll.
+        /// See DbgHelp.rux for MiniDumpWriteDump.
+    }
+
+
+    // ── Convenience wrapper ───────────────────────────────────────────────────
+
+    /// Installs a process-wide crash guard that calls `handler` for every
+    /// exception before the process crashes. Returns the VEH handle.
+    ///
+    /// # Example
+    ///   func MyCrashHandler(info: *ExceptionPointers) -> int32 {
+    ///       OutputDebugStringA("crash!\n\0");
+    ///       return EXCEPTION_CONTINUE_SEARCH;   // let it crash normally
+    ///   }
+    ///   let guard = InstallCrashGuard(&MyCrashHandler as *const opaque);
+    ///   // later:
+    ///   RemoveVectoredExceptionHandler(guard);
+    pub func InstallCrashGuard(handler: *const opaque) -> *opaque {
+        return AddVectoredExceptionHandler(1u32, handler);
+    }
+
+}

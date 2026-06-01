@@ -1,6 +1,6 @@
 [Package]
 Name = "Windows"
-Version = "0.2.0"
+Version = "0.3.0"
 Type = "Source"
-Description = "Windows API bindings"
+Description = "Windows API bindings — Kernel32, User32, Gdi32, NtDll, Advapi32, BCrypt, Crypt32, DbgHelp, Psapi, Ws2_32, WinHvPlatform, SEH, PE/hooks/process/proxy-DLL utilities"
 Authors = ["Rux Contributors <info@rux-lang.dev>", "the-lust"]

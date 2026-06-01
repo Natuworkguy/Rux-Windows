@@ -159,6 +159,77 @@ module Windows {
     }
 
 
+
+    // ── File I/O Types (from rux-lang/Windows upstream) ─────────────────────
+
+    /// Contains a 64-bit value representing 100-nanosecond intervals since Jan 1 1601 (UTC).
+    /// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+    pub struct FileTime {
+        pub lowDateTime:  uint32;
+        pub highDateTime: uint32;
+    }
+
+    /// Contains information about a file found by FindFirstFile / FindNextFile.
+    /// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataa
+    pub struct Win32FindDataA {
+        pub fileAttributes:    uint32;
+        pub creationTime:      FileTime;
+        pub lastAccessTime:    FileTime;
+        pub lastWriteTime:     FileTime;
+        pub fileSizeHigh:      uint32;
+        pub fileSizeLow:       uint32;
+        pub reserved0:         uint32;
+        pub reserved1:         uint32;
+        pub fileName:          char8[260];
+        pub alternateFileName: char8[14];
+    }
+
+    /// Defines constants for read, write, or read/write access to a file.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.fileaccess
+    enum FileAccess: uint32 {
+        Read      = 0x80000000,
+        Write     = 0x40000000,
+        ReadWrite = 0xC0000000
+    }
+
+    /// Controls what access other operations can have to the same file.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.fileshare
+    enum FileShare: uint32 {
+        None   = 0,
+        Read   = 1,
+        Write  = 2,
+        Delete = 4
+    }
+
+    /// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea
+    enum CreationDisposition: uint32 {
+        CreateNew        = 1,
+        CreateAlways     = 2,
+        OpenExisting     = 3,
+        OpenAlways       = 4,
+        TruncateExisting = 5
+    }
+
+    /// Provides attributes for files and directories.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.fileattributes
+    enum FileAttributes: uint32 {
+        ReadOnly  = 0x1,
+        Hidden    = 0x2,
+        System    = 0x4,
+        Directory = 0x10,
+        Archive   = 0x20,
+        Normal    = 0x80,
+        Temporary = 0x100
+    }
+
+    /// Specifies the position in a stream to use for seeking.
+    /// https://learn.microsoft.com/en-us/dotnet/api/system.io.seekorigin
+    enum SeekOrigin: uint32 {
+        Begin   = 0,
+        Current = 1,
+        End     = 2
+    }
+
     // Structures — Process, Memory, Thread
 
 
