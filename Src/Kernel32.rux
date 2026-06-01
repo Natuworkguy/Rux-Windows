@@ -607,7 +607,7 @@ module Windows {
         /// Maps a character string to a UTF-16 wide character string
         /// https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
         func MultiByteToWideChar(
-            codePage: uint32,
+            codePage: CodePage,
             flags: uint32,
             multiByteStr: *const char8,
             multiByte: int32,
