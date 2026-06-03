@@ -390,6 +390,16 @@ module Windows {
             shareMode: FileShare,
             securityAttributes: *opaque,
             creationDisposition: CreationDisposition,
+            flagsAndAttributes: FileAttributes,
+            templateFile: *opaque
+        ) -> *opaque;
+
+        func CreateFileA(
+            fileName: *const char8,
+            desiredAccess: uint32,
+            shareMode: uint32,
+            securityAttributes: *opaque,
+            creationDisposition: uint32,
             flagsAndAttributes: uint32,
             templateFile: *opaque
         ) -> *opaque;
