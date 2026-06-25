@@ -2,5 +2,5 @@
 Name = "Windows"
 Version = "0.1.4"
 Type = "Source"
-Description = "Windows API"
+Description = "Windows platform bindings"
 Authors = ["Rux Contributors <info@rux-lang.dev>"]
