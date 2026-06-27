@@ -12,7 +12,7 @@ Add `Windows` to your `Rux.toml`:
 
 ```toml
 [Dependencies]
-Windows = "0.1.4"
+Windows = "*"
 ```
 
 ## Features
